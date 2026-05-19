@@ -20,7 +20,7 @@ class DashboardPage extends StatelessWidget {
             ),
           ),
 
-          // 2. KONTEN STRUKTUR UTAMA
+          // struktur utama
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +33,7 @@ class DashboardPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header
+                      // header
                       Row(
                         children: [
                           const Text(
@@ -56,7 +56,7 @@ class DashboardPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
 
-                      // Card LABA HARI INI
+                      // card laba hari ini
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(24),
@@ -164,11 +164,7 @@ class DashboardPage extends StatelessWidget {
             label: 'Beranda',
           ),
           BottomNavigationBarItem(
-            icon: Badge(
-              label: const Text('2'),
-              backgroundColor: const Color(0xffe53935),
-              child: const Icon(Icons.shopping_cart_outlined),
-            ),
+            icon: Icon(Icons.shopping_cart_outlined),
             label: 'Pesanan',
           ),
           const BottomNavigationBarItem(
