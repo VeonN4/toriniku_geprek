@@ -8,9 +8,9 @@ class DashboardPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xfff6f6f6),
       body: Stack(
-        children: [          
+        children: [
           Container(
-            height: MediaQuery.of(context).size.height * 0.48,
+            height: 330,
             decoration: const BoxDecoration(
               color: Color(0xffff6600),
               borderRadius: BorderRadius.only(
@@ -19,14 +19,17 @@ class DashboardPage extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // 2. KONTEN STRUKTUR UTAMA
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -53,7 +56,7 @@ class DashboardPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
 
-                      // Card LABA HARI INI 
+                      // Card LABA HARI INI
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(24),
@@ -96,8 +99,8 @@ class DashboardPage extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: _buildFinancialInfo(
-                                    label: 'Pemasukan',
-                                    value: 'Rp 770.000',
+                                    label: 'DD/MM/YY',
+                                    value: '12/12/12',
                                   ),
                                 ),
                                 Container(
@@ -128,47 +131,13 @@ class DashboardPage extends StatelessWidget {
                     child: Column(
                       children: [
                         const SizedBox(height: 8),
-                        GridView.count(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 1.1,
-                          children: [
-                            _buildMenuCard(
-                              icon: Icons.shopping_bag_outlined,
-                              iconColor: const Color(0xff1a73e8),
-                              iconBgColor: const Color(0xffe8f0fe),
-                              title: 'Order Aktif',
-                              value: '2',
-                              subtitle: '0 menunggu',
-                            ),
-                            _buildMenuCard(
-                              icon: Icons.layers_outlined,
-                              iconColor: const Color(0xff9333ea),
-                              iconBgColor: const Color(0xfff3e8ff),
-                              title: 'Stok Menipis',
-                              value: '0',
-                              subtitle: 'item perlu restock',
-                            ),
-                            _buildMenuCard(
-                              icon: Icons.trending_up,
-                              iconColor: const Color(0xff00c853),
-                              iconBgColor: const Color(0xffe8f5e9),
-                              title: 'Total Pemasukan',
-                              value: 'Rp 770.000',
-                              subtitle: 'semua waktu',
-                            ),
-                            _buildMenuCard(
-                              icon: Icons.trending_down,
-                              iconColor: const Color(0xffd50000),
-                              iconBgColor: const Color(0xffffebee),
-                              title: 'Total Pengeluaran',
-                              value: 'Rp 400.000',
-                              subtitle: 'semua waktu',
-                            ),
-                          ],
+                        _buildMenuCard(
+                          icon: Icons.shopping_bag_outlined,
+                          iconColor: const Color(0xff1a73e8),
+                          iconBgColor: const Color(0xffe8f0fe),
+                          title: 'Order Aktif',
+                          value: '2',
+                          subtitle: '0 menunggu',
                         ),
                         const SizedBox(height: 24),
                       ],
@@ -180,7 +149,7 @@ class DashboardPage extends StatelessWidget {
           ),
         ],
       ),
-      
+
       // Bottom Navigation Bar tetap sama
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -190,7 +159,10 @@ class DashboardPage extends StatelessWidget {
         selectedFontSize: 12,
         unselectedFontSize: 12,
         items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Beranda',
+          ),
           BottomNavigationBarItem(
             icon: Badge(
               label: const Text('2'),
@@ -199,35 +171,68 @@ class DashboardPage extends StatelessWidget {
             ),
             label: 'Pesanan',
           ),
-          const BottomNavigationBarItem(icon: Icon(Icons.restaurant_menu), label: 'Menu'),
-          const BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'Stok'),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.restaurant_menu),
+            label: 'Menu',
+          ),
         ],
       ),
     );
   }
 
   // Helper _buildFinancialInfo dan _buildMenuCard tetap sama seperti kode sebelumnya
-  Widget _buildFinancialInfo({required String label, required String value, CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start}) {
+  Widget _buildFinancialInfo({
+    required String label,
+    required String value,
+    CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Column(
         crossAxisAlignment: crossAxisAlignment,
         children: [
-          Text(label, style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14)),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 14,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildMenuCard({required IconData icon, required Color iconColor, required Color iconBgColor, required String title, required String value, required String subtitle}) {
+  Widget _buildMenuCard({
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBgColor,
+    required String title,
+    required String value,
+    required String subtitle,
+  }) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color.fromARGB(255, 187, 177, 177),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,19 +240,39 @@ class DashboardPage extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: iconBgColor, borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: iconBgColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Icon(icon, color: iconColor, size: 24),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(color: Color(0xff5f6368), fontSize: 14, fontWeight: FontWeight.w500)),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Color(0xff5f6368),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(value, style: const TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(
+                value,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(subtitle, style: const TextStyle(color: Colors.black38, fontSize: 12)),
+              Text(
+                subtitle,
+                style: const TextStyle(color: Colors.black38, fontSize: 12),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
