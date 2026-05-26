@@ -19,9 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full bg-gray-100 flex items-center justify-center">
-        {children}
-      </body>
+      <body className="h-full">{children}</body>
     </html>
   );
 }
