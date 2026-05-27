@@ -23,6 +23,7 @@ export default function DiskonPage() {
 
   // Drawer / Add & Edit Discount Form State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [animateOpen, setAnimateOpen] = useState(false);
   const [editingDiscount, setEditingDiscount] = useState<Discount | null>(null);
 
   const [name, setName] = useState("");
@@ -48,6 +49,9 @@ export default function DiskonPage() {
     setExpiresAt("");
     setError("");
     setIsDrawerOpen(true);
+    requestAnimationFrame(() => {
+      setTimeout(() => setAnimateOpen(true), 50);
+    });
   };
 
   const handleOpenEdit = (discount: Discount) => {
@@ -66,16 +70,22 @@ export default function DiskonPage() {
     );
     setError("");
     setIsDrawerOpen(true);
+    requestAnimationFrame(() => {
+      setTimeout(() => setAnimateOpen(true), 50);
+    });
   };
 
   const handleCloseDrawer = () => {
-    setIsDrawerOpen(false);
-    setEditingDiscount(null);
-    setName("");
-    setType("percent");
-    setValue("");
-    setExpiresAt("");
-    setError("");
+    setAnimateOpen(false);
+    setTimeout(() => {
+      setIsDrawerOpen(false);
+      setEditingDiscount(null);
+      setName("");
+      setType("percent");
+      setValue("");
+      setExpiresAt("");
+      setError("");
+    }, 300);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -453,24 +463,37 @@ export default function DiskonPage() {
         )}
       </div>
 
-      {/* ── Premium Add/Edit Discount Drawer (Slide-over panel) ── */}
+      {/* ── Premium Add/Edit Discount Drawe      {/* ── Premium Add/Edit Discount Drawer (Modal / Bottom Sheet) ── */}
       {isDrawerOpen && (
         <div
-          className="fixed inset-0 z-50 overflow-hidden flex justify-end"
+          className={`fixed inset-0 z-50 overflow-hidden flex items-end md:items-center justify-center md:p-4 transition-all duration-300 ${
+            animateOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
           id="drawer-container"
         >
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={handleCloseDrawer}
           />
 
           {/* Panel */}
-          <div className="relative w-full max-w-md bg-surface-container-lowest h-full shadow-2xl flex flex-col justify-between z-10 animate-slide-in">
+          <div
+            className="relative bg-surface-container-lowest shadow-2xl flex flex-col w-full z-10 transition-all duration-300 ease-out rounded-t-3xl md:rounded-2xl md:max-w-md"
+            style={{
+              transform: animateOpen ? "translateY(0) scale(1)" : "translateY(100%) scale(0.95)",
+              maxHeight: "85dvh",
+            }}
+          >
+            {/* Drag handle — visible on mobile only */}
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0 md:hidden">
+              <div className="w-12 h-1 bg-surface-container-highest rounded-full" />
+            </div>
+
             {/* Header */}
-            <div className="px-6 py-5 border-b border-surface-container-high flex items-center justify-between bg-primary/5">
+            <div className="px-5 pb-4 pt-4 md:pt-5 border-b border-surface-container-high flex items-start justify-between flex-shrink-0">
               <div>
-                <h2 className="text-lg font-bold text-on-surface uppercase tracking-wide">
+                <h2 className="text-base font-bold text-on-surface uppercase tracking-wide">
                   {editingDiscount ? "Edit Diskon" : "Tambah Diskon Baru"}
                 </h2>
                 <p className="text-secondary text-xs mt-0.5">
@@ -482,10 +505,10 @@ export default function DiskonPage() {
               <button
                 id="btn-close-drawer"
                 onClick={handleCloseDrawer}
-                className="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary hover:text-on-surface transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary hover:text-on-surface active:scale-90 transition-colors cursor-pointer mt-0.5"
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-4.5 h-4.5"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={2.5}
@@ -503,7 +526,7 @@ export default function DiskonPage() {
             {/* Form Content */}
             <form
               onSubmit={handleSave}
-              className="flex-1 overflow-y-auto px-6 py-5 space-y-4"
+              className="flex-1 overflow-y-auto px-5 py-4 space-y-4"
             >
               {/* Type tabs selector */}
               <div>
@@ -659,7 +682,7 @@ export default function DiskonPage() {
             </form>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-surface-container-high bg-surface-container-low flex gap-3">
+            <div className="px-5 py-4 border-t border-surface-container-high bg-surface-container-low flex gap-3 flex-shrink-0 rounded-b-2xl">
               <button
                 type="button"
                 id="btn-cancel"
