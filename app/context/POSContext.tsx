@@ -69,6 +69,10 @@ interface POSContextType {
   menuItems: MenuItem[];
   menuLoading: boolean;
   addMenuItem: (item: Omit<MenuItem, "id">) => Promise<void>;
+  addMenuItemWithModifiers: (
+    item: Omit<MenuItem, "id">,
+    modifiers: { name: string; priceDelta: number }[]
+  ) => Promise<void>;
   updateMenuItemStatus: (id: string, status: "Ready" | "Habis") => Promise<void>;
   deleteMenuItem: (id: string) => Promise<void>;
   discounts: Discount[];
@@ -80,6 +84,9 @@ interface POSContextType {
   categoriesLoading: boolean;
   modifiers: Modifier[];
   modifiersLoading: boolean;
+  addModifier: (menuItemId: string, name: string, priceDelta: number) => Promise<void>;
+  updateModifier: (modifierId: string, name: string, priceDelta: number) => Promise<void>;
+  deleteModifier: (modifierId: string) => Promise<void>;
   addCompleteOrder: (
     order: {
       discountId?: string;
@@ -338,6 +345,47 @@ export function POSProvider({ children }: { children: ReactNode }) {
     if (!error) await fetchMenuItems();
   };
 
+  const addMenuItemWithModifiers = async (
+    item: Omit<MenuItem, "id">,
+    newModifiers: { name: string; priceDelta: number }[]
+  ) => {
+    // 1. Insert the menu item and get back its id
+    const { data: itemData, error: itemError } = await supabase
+      .from("menu_items")
+      .insert({
+        name: item.name,
+        price: item.price,
+        category_id: item.category || null,
+        is_available: item.status === "Ready",
+        description: item.note || null,
+      })
+      .select("id")
+      .single();
+
+    if (itemError || !itemData) {
+      throw new Error(itemError?.message || "Gagal menyimpan menu");
+    }
+
+    // 2. Batch-insert modifiers if any
+    if (newModifiers.length > 0) {
+      const modifiersPayload = newModifiers.map((mod) => ({
+        menu_item_id: itemData.id,
+        name: mod.name,
+        price_delta: mod.priceDelta,
+      }));
+      const { error: modError } = await supabase
+        .from("modifiers")
+        .insert(modifiersPayload);
+      if (modError) {
+        console.error("Error inserting modifiers:", modError);
+        throw new Error(modError.message || "Gagal menyimpan modifier");
+      }
+    }
+
+    // 3. Refresh both states
+    await Promise.all([fetchMenuItems(), fetchModifiers()]);
+  };
+
   const updateMenuItemStatus = async (id: string, status: "Ready" | "Habis") => {
     const { error } = await supabase.from("menu_items").update({ is_available: status === "Ready" }).eq("id", id);
     if (!error) {
@@ -373,6 +421,40 @@ export function POSProvider({ children }: { children: ReactNode }) {
   const deleteDiscount = async (id: string) => {
     const { error } = await supabase.from("discounts").delete().eq("id", id);
     if (!error) setDiscounts((prev) => prev.filter((d) => d.id !== id));
+  };
+
+  // ── Modifier mutations ───────────────────────────────────────────────────────
+
+  const addModifier = async (menuItemId: string, name: string, priceDelta: number) => {
+    const { data, error } = await supabase
+      .from("modifiers")
+      .insert({ menu_item_id: menuItemId, name, price_delta: priceDelta })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    if (data) {
+      setModifiers((prev) => [
+        ...prev,
+        { id: data.id, menuItemId: data.menu_item_id, name: data.name, priceDelta: Number(data.price_delta) },
+      ]);
+    }
+  };
+
+  const updateModifier = async (modifierId: string, name: string, priceDelta: number) => {
+    const { error } = await supabase
+      .from("modifiers")
+      .update({ name, price_delta: priceDelta })
+      .eq("id", modifierId);
+    if (error) throw new Error(error.message);
+    setModifiers((prev) =>
+      prev.map((m) => (m.id === modifierId ? { ...m, name, priceDelta } : m))
+    );
+  };
+
+  const deleteModifier = async (modifierId: string) => {
+    const { error } = await supabase.from("modifiers").delete().eq("id", modifierId);
+    if (error) throw new Error(error.message);
+    setModifiers((prev) => prev.filter((m) => m.id !== modifierId));
   };
 
   // ── Complete Order mutations ───────────────────────────────────────────────
@@ -474,6 +556,7 @@ export function POSProvider({ children }: { children: ReactNode }) {
         ordersLoading,
         addOrder,
         updateOrderStatus,
+        addMenuItemWithModifiers,
         menuItems,
         menuLoading,
         addMenuItem,
@@ -488,6 +571,9 @@ export function POSProvider({ children }: { children: ReactNode }) {
         categoriesLoading,
         modifiers,
         modifiersLoading,
+        addModifier,
+        updateModifier,
+        deleteModifier,
         addCompleteOrder,
       }}
     >

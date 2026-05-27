@@ -45,6 +45,9 @@ export default function PesananBaruPage() {
   const [tempSelectedModifiers, setTempSelectedModifiers] = useState<Modifier[]>([]);
   const [tempNotes, setTempNotes] = useState("");
 
+  // Mobile cart sheet
+  const [cartOpen, setCartOpen] = useState(false);
+
   // Checkout Status
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -220,16 +223,18 @@ export default function PesananBaruPage() {
     setError("");
   };
 
+  const totalItems = cart.reduce((s, c) => s + c.quantity, 0);
+
   return (
-    <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-gray-50">
+    <div className="flex flex-col md:flex-row min-h-dvh md:h-screen md:overflow-hidden bg-gray-50">
       
-      {/* ── LEFT PANEL: MENU & SELECTION (2/3 width on desktop) ── */}
-      <div className="flex-1 md:w-3/5 lg:w-2/3 flex flex-col p-4 md:p-6 overflow-y-auto border-r border-gray-200">
+      {/* ── LEFT PANEL: MENU & SELECTION ── */}
+      <div className="flex-1 md:w-3/5 lg:w-2/3 flex flex-col p-4 md:p-6 overflow-y-auto md:border-r border-gray-200 pb-28 md:pb-6">
         <div className="flex flex-col gap-4 mb-5">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Kasir POS</h1>
-              <p className="text-gray-500 text-sm">Pilih menu makanan, minuman, dan konfigurasi modifier</p>
+              <p className="text-gray-500 text-sm hidden md:block">Pilih menu, konfigurasi modifier</p>
             </div>
             <button
               onClick={() => router.push("/pesanan")}
@@ -328,41 +333,212 @@ export default function PesananBaruPage() {
         )}
       </div>
 
-      {/* ── RIGHT PANEL: CART & CHECKOUT SUMMARY (1/3 width on desktop) ── */}
-      <div className="w-full md:w-2/5 lg:w-1/3 bg-white p-4 md:p-6 border-t md:border-t-0 md:border-l border-gray-200 flex flex-col justify-between shadow-2xl md:h-screen md:sticky md:top-0">
+      {/* ── MOBILE: Floating Cart Button ── */}
+      {totalItems > 0 && (
+        <div className="md:hidden fixed bottom-4 left-4 right-4 z-40">
+          <button
+            onClick={() => setCartOpen(true)}
+            className="w-full bg-primary hover:bg-primary-dark active:scale-[0.98] text-white font-bold rounded-xl px-5 py-4 flex items-center justify-between shadow-active cursor-pointer transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 rounded-lg px-2.5 py-1 text-sm font-bold">{totalItems}</div>
+              <span className="text-sm font-bold uppercase tracking-wide">Detail Pesanan</span>
+            </div>
+            <span className="text-sm font-bold">{formatRupiah(total)}</span>
+          </button>
+        </div>
+      )}
+
+      {/* ── MOBILE: Cart Bottom Sheet ── */}
+      <div
+        className={`md:hidden fixed inset-0 z-50 transition-all duration-300 ${cartOpen ? "pointer-events-auto" : "pointer-events-none"}`}
+      >
+        {/* Backdrop */}
+        <div
+          onClick={() => setCartOpen(false)}
+          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${cartOpen ? "opacity-100" : "opacity-0"}`}
+        />
+        {/* Sheet */}
+        <div
+          className={`absolute bottom-0 left-0 right-0 bg-surface-container-lowest rounded-t-3xl shadow-2xl flex flex-col transition-transform duration-300 ease-out`}
+          style={{
+            transform: cartOpen ? "translateY(0)" : "translateY(100%)",
+            maxHeight: "90dvh",
+          }}
+        >
+          {/* Drag handle */}
+          <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+            <div className="w-12 h-1 bg-surface-container-highest rounded-full" />
+          </div>
+          {/* Sheet header */}
+          <div className="px-5 py-3 flex items-center justify-between border-b border-surface-container-high flex-shrink-0">
+            <h2 className="font-bold text-on-surface text-base uppercase tracking-wide">Detail Pesanan</h2>
+            <button
+              onClick={() => setCartOpen(false)}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container text-secondary cursor-pointer transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          {/* Sheet body — scrollable */}
+          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+            {/* Dine-in vs Takeaway */}
+            <div className="flex gap-2 p-1 bg-surface-container rounded-lg">
+              <button
+                onClick={() => setOrderType("dine_in")}
+                className={`flex-1 py-2 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                  orderType === "dine_in"
+                    ? "bg-primary text-on-primary shadow-sm"
+                    : "text-secondary hover:text-primary"
+                }`}
+              >
+                🍽️ Dine In
+              </button>
+              <button
+                onClick={() => setOrderType("takeaway")}
+                className={`flex-1 py-2 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                  orderType === "takeaway"
+                    ? "bg-primary text-on-primary shadow-sm"
+                    : "text-secondary hover:text-primary"
+                }`}
+              >
+                🥡 Bungkus
+              </button>
+            </div>
+            {/* Cart list */}
+            {cart.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-secondary">
+                <p className="text-xs font-medium">Keranjang masih kosong</p>
+              </div>
+            ) : (
+              <div className="space-y-3.5">
+                {cart.map((entry) => {
+                  const totalItemPrice = entry.item.price + entry.selectedModifiers.reduce((s, m) => s + m.priceDelta, 0);
+                  return (
+                    <div key={entry.cartId} className="flex gap-3 justify-between items-start border-b border-surface-container-high pb-3.5">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-on-surface text-sm truncate">{entry.item.name}</p>
+                        {entry.selectedModifiers.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {entry.selectedModifiers.map((mod) => (
+                              <span key={mod.id} className="bg-surface-container-high text-secondary text-xxs font-medium px-2 py-0.5 rounded border border-outline-variant">
+                                +{mod.name}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {entry.customNotes && <p className="text-secondary text-xxs italic mt-0.5">Catatan: {entry.customNotes}</p>}
+                        <p className="text-xs font-bold text-primary mt-1">{formatRupiah(totalItemPrice * entry.quantity)}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => updateQuantity(entry.cartId, -1)} className="w-8 h-8 border border-outline bg-surface-container-lowest text-secondary rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer hover:bg-surface-container transition-colors">-</button>
+                        <span className="text-xs font-bold w-4 text-center text-on-surface">{entry.quantity}</span>
+                        <button onClick={() => updateQuantity(entry.cartId, 1)} className="w-8 h-8 border border-outline bg-surface-container-lowest text-secondary rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer hover:bg-surface-container transition-colors">+</button>
+                        <button onClick={() => removeCartItem(entry.cartId)} className="text-secondary hover:text-error p-1 cursor-pointer transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {/* Discount */}
+            <div>
+              <label className="block text-xxs font-bold text-secondary uppercase tracking-wider mb-1.5">Kupon Diskon</label>
+              <select value={selectedDiscountId} onChange={(e) => { setSelectedDiscountId(e.target.value); setError(""); }} className="w-full px-3 py-2.5 border border-outline rounded-lg text-xs font-medium text-on-surface focus:outline-none focus:border-primary bg-surface-container-lowest cursor-pointer transition-all">
+                <option value="">-- Pilih Kupon Diskon --</option>
+                {activeDiscounts.map((d) => (<option key={d.id} value={d.id}>{d.name} ({d.type === "percent" ? `${d.value}%` : `-${formatRupiah(d.value)}`})</option>))}
+              </select>
+            </div>
+            {/* Price breakdown */}
+            <div className="space-y-2 border-b border-surface-container-high pb-3 text-xs text-secondary">
+              <div className="flex justify-between"><span>Subtotal</span><span className="font-semibold text-on-surface">{formatRupiah(subtotal)}</span></div>
+              {discountAmount > 0 && <div className="flex justify-between text-error font-semibold"><span>Diskon</span><span>-{formatRupiah(discountAmount)}</span></div>}
+              <div className="flex justify-between"><span>Pajak PB1 (10%)</span><span className="font-semibold text-on-surface">{formatRupiah(tax)}</span></div>
+              <div className="flex justify-between text-sm font-bold text-on-surface pt-1.5"><span>Total Akhir</span><span className="text-primary text-base font-bold">{formatRupiah(total)}</span></div>
+            </div>
+            {/* Payment method */}
+            <div>
+              <label className="block text-xxs font-bold text-secondary uppercase tracking-wider mb-1.5">Metode Pembayaran</label>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => { setPaymentMethod("cash"); setAmountPaid(""); setError(""); }} className={`flex-1 py-2.5 border rounded-lg text-xs font-bold transition-all cursor-pointer ${paymentMethod === "cash" ? "border-primary bg-primary/5 text-primary" : "border-outline-variant text-secondary"}`}>💵 Tunai</button>
+                <button type="button" onClick={() => { setPaymentMethod("qris"); setAmountPaid(""); setError(""); }} className={`flex-1 py-2.5 border rounded-lg text-xs font-bold transition-all cursor-pointer ${paymentMethod === "qris" ? "border-primary bg-primary/5 text-primary" : "border-outline-variant text-secondary"}`}>📱 QRIS</button>
+              </div>
+            </div>
+            {/* Quick cash + amount input */}
+            <div className="space-y-2 bg-surface-container-low p-3 rounded-lg border border-surface-container-high">
+              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                <button type="button" onClick={() => handleQuickCash(total)} className="bg-surface-container-lowest px-2.5 py-1 border border-outline rounded text-xxs font-bold text-secondary hover:bg-surface-container cursor-pointer whitespace-nowrap transition-colors">Uang Pas</button>
+                {[20000, 50000, 100000].map((amt) => (<button key={amt} type="button" onClick={() => handleQuickCash(amt)} className="bg-surface-container-lowest px-2.5 py-1 border border-outline rounded text-xxs font-bold text-secondary hover:bg-surface-container cursor-pointer whitespace-nowrap transition-colors">{amt.toLocaleString("id-ID")}</button>))}
+              </div>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-secondary font-bold">Bayar Rp</span>
+                <input type="text" inputMode="numeric" value={amountPaid} onChange={(e) => { const d = e.target.value.replace(/\D/g, ""); setAmountPaid(d ? parseInt(d).toLocaleString("id-ID") : ""); setError(""); }} placeholder="Masukkan nominal" className="w-full pl-18 pr-4 py-2.5 border border-outline rounded-lg text-xs font-bold text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all" />
+              </div>
+              {changeGiven > 0 && (
+                <div className="flex justify-between text-tertiary font-bold text-xs pt-1 border-t border-dashed border-outline">
+                  <span>Kembalian</span><span>{formatRupiah(changeGiven)}</span>
+                </div>
+              )}
+            </div>
+            {error && <p className="text-error text-xs font-semibold text-center">{error}</p>}
+            {/* Checkout button */}
+            <button
+              onClick={() => { handleCheckout(); }}
+              disabled={isSubmitting || success || cart.length === 0}
+              className={`w-full py-4 rounded-lg text-white font-bold text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 mb-2 ${
+                success ? "bg-tertiary shadow-lg" : "bg-primary hover:bg-primary-dark disabled:bg-surface-container-highest disabled:text-secondary shadow-active"
+              }`}
+            >
+              {isSubmitting ? "Memproses..." : success ? "✓ Transaksi Berhasil!" : "Bayar & Selesaikan"}
+            </button>
+            <div className="h-2" />
+          </div>
+        </div>
+      </div>
+
+      {/* ── RIGHT PANEL: DESKTOP ONLY ── */}
+      <div className="hidden md:flex w-2/5 lg:w-1/3 bg-surface-container-lowest p-5 border-l border-surface-container-high flex-col justify-between shadow-ambient md:h-screen md:sticky md:top-0">
         
         {/* Upper Summary Section */}
         <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
-            <h2 className="font-bold text-gray-800 text-base">Detail Pesanan</h2>
-            <span className="bg-gray-100 text-gray-600 text-xs font-bold px-2.5 py-1 rounded-full">
+          <div className="flex items-center justify-between border-b border-surface-container-high pb-3 mb-4">
+            <h2 className="font-bold text-on-surface text-base uppercase tracking-wide">Detail Pesanan</h2>
+            <span className="bg-surface-container text-secondary text-xs font-bold px-2.5 py-1 rounded-lg">
               {cart.reduce((s, c) => s + c.quantity, 0)} Items
             </span>
           </div>
 
           {/* Dine-in vs Takeaway select */}
-          <div className="flex gap-2 mb-4 p-1 bg-gray-100 rounded-xl">
+          <div className="flex gap-2 mb-4 p-1 bg-surface-container rounded-lg">
             <button
               onClick={() => setOrderType("dine_in")}
-              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                orderType === "dine_in" ? "bg-white text-orange-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+              className={`flex-1 py-2 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                orderType === "dine_in"
+                  ? "bg-primary text-on-primary shadow-sm"
+                  : "text-secondary hover:text-primary"
               }`}
             >
-              🍽️ Dine In (Makan Sini)
+              🍽️ Dine In
             </button>
             <button
               onClick={() => setOrderType("takeaway")}
-              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                orderType === "takeaway" ? "bg-white text-orange-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+              className={`flex-1 py-2 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                orderType === "takeaway"
+                  ? "bg-primary text-on-primary shadow-sm"
+                  : "text-secondary hover:text-primary"
               }`}
             >
-              🥡 Takeaway (Bungkus)
+              🥡 Bungkus
             </button>
           </div>
 
           {/* Cart Items List */}
           {cart.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center py-10 text-gray-300">
+            <div className="flex-1 flex flex-col items-center justify-center py-10 text-secondary">
               <svg className="w-12 h-12 mb-2 opacity-30" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M8 12h8" />
               </svg>
@@ -374,15 +550,15 @@ export default function PesananBaruPage() {
                 const totalItemPrice = entry.item.price + entry.selectedModifiers.reduce((s, m) => s + m.priceDelta, 0);
                 
                 return (
-                  <div key={entry.cartId} className="flex gap-3 justify-between items-start border-b border-gray-50 pb-3">
+                  <div key={entry.cartId} className="flex gap-3 justify-between items-start border-b border-surface-container-high pb-3.5">
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-800 text-sm truncate">{entry.item.name}</p>
+                      <p className="font-bold text-on-surface text-sm truncate">{entry.item.name}</p>
                       
                       {/* Active Modifiers listing */}
                       {entry.selectedModifiers.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {entry.selectedModifiers.map((mod) => (
-                            <span key={mod.id} className="bg-gray-100 text-gray-500 text-xxs font-medium px-2 py-0.5 rounded border border-gray-200">
+                            <span key={mod.id} className="bg-surface-container text-secondary text-xxs font-medium px-2 py-0.5 rounded border border-outline-variant">
                               +{mod.name} ({mod.priceDelta > 0 ? `+Rp ${mod.priceDelta.toLocaleString("id-ID")}` : "Free"})
                             </span>
                           ))}
@@ -390,29 +566,29 @@ export default function PesananBaruPage() {
                       )}
                       
                       {entry.customNotes && (
-                        <p className="text-gray-400 text-xxs italic mt-0.5">Catatan: {entry.customNotes}</p>
+                        <p className="text-secondary text-xxs italic mt-0.5">Catatan: {entry.customNotes}</p>
                       )}
-                      <p className="text-xs font-bold text-orange-500 mt-1">{formatRupiah(totalItemPrice * entry.quantity)}</p>
+                      <p className="text-xs font-bold text-primary mt-1">{formatRupiah(totalItemPrice * entry.quantity)}</p>
                     </div>
 
                     {/* Quantity & Delete controls */}
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateQuantity(entry.cartId, -1)}
-                        className="w-7 h-7 border border-gray-200 hover:border-gray-300 bg-white rounded-lg flex items-center justify-center text-gray-500 text-xs font-bold cursor-pointer transition-colors"
+                        className="w-8 h-8 border border-outline bg-surface-container-lowest text-secondary rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer hover:bg-surface-container transition-all"
                       >
                         -
                       </button>
-                      <span className="text-xs font-bold w-4 text-center text-gray-700">{entry.quantity}</span>
+                      <span className="text-xs font-bold w-4 text-center text-on-surface">{entry.quantity}</span>
                       <button
                         onClick={() => updateQuantity(entry.cartId, 1)}
-                        className="w-7 h-7 border border-gray-200 hover:border-gray-300 bg-white rounded-lg flex items-center justify-center text-gray-500 text-xs font-bold cursor-pointer transition-colors"
+                        className="w-8 h-8 border border-outline bg-surface-container-lowest text-secondary rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer hover:bg-surface-container transition-all"
                       >
                         +
                       </button>
                       <button
                         onClick={() => removeCartItem(entry.cartId)}
-                        className="text-gray-300 hover:text-red-500 p-1 cursor-pointer transition-colors"
+                        className="text-secondary hover:text-error p-1 cursor-pointer transition-colors"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -427,18 +603,18 @@ export default function PesananBaruPage() {
         </div>
 
         {/* Lower Checkout/Calculation Section */}
-        <div className="border-t border-gray-100 pt-4 bg-white mt-auto space-y-3">
+        <div className="border-t border-surface-container-high pt-4 bg-surface-container-lowest mt-auto space-y-3.5">
           
           {/* Discounts Selector */}
           <div>
-            <label className="block text-xxs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Kupon Diskon</label>
+            <label className="block text-xxs font-bold text-secondary uppercase tracking-wider mb-1.5">Kupon Diskon</label>
             {discountsLoading ? (
               <Skeleton className="h-9 w-full" />
             ) : (
               <select
                 value={selectedDiscountId}
                 onChange={(e) => { setSelectedDiscountId(e.target.value); setError(""); }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-medium text-gray-600 focus:outline-none focus:border-orange-400 cursor-pointer"
+                className="w-full px-3 py-2 border border-outline rounded-lg text-xs font-medium text-on-surface focus:outline-none focus:border-primary bg-surface-container-lowest cursor-pointer transition-all"
               >
                 <option value="">-- Pilih Kupon Diskon --</option>
                 {activeDiscounts.map((d) => (
@@ -451,36 +627,38 @@ export default function PesananBaruPage() {
           </div>
 
           {/* Pricing break downs */}
-          <div className="space-y-1.5 border-b border-gray-100 pb-3 text-xs text-gray-500">
+          <div className="space-y-2 border-b border-surface-container-high pb-3 text-xs text-secondary">
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span className="font-semibold text-gray-700">{formatRupiah(subtotal)}</span>
+              <span className="font-semibold text-on-surface">{formatRupiah(subtotal)}</span>
             </div>
             {discountAmount > 0 && (
-              <div className="flex justify-between text-red-500 font-semibold">
+              <div className="flex justify-between text-error font-semibold">
                 <span>Diskon Promo</span>
                 <span>-{formatRupiah(discountAmount)}</span>
               </div>
             )}
             <div className="flex justify-between">
               <span>Pajak Restoran PB1 (10%)</span>
-              <span className="font-semibold text-gray-700">{formatRupiah(tax)}</span>
+              <span className="font-semibold text-on-surface">{formatRupiah(tax)}</span>
             </div>
-            <div className="flex justify-between text-sm font-bold text-gray-800 pt-1.5">
+            <div className="flex justify-between text-sm font-bold text-on-surface pt-1.5">
               <span>Total Akhir</span>
-              <span className="text-orange-500 text-base">{formatRupiah(total)}</span>
+              <span className="text-primary text-base font-bold">{formatRupiah(total)}</span>
             </div>
           </div>
 
           {/* Payment selector */}
           <div>
-            <label className="block text-xxs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Metode Pembayaran</label>
+            <label className="block text-xxs font-bold text-secondary uppercase tracking-wider mb-1.5">Metode Pembayaran</label>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => { setPaymentMethod("cash"); setAmountPaid(""); setError(""); }}
-                className={`flex-1 py-2 border rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  paymentMethod === "cash" ? "border-orange-500 bg-orange-50 text-orange-600" : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                className={`flex-1 py-2 border rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  paymentMethod === "cash"
+                    ? "border-primary bg-primary/5 text-primary border-2"
+                    : "border-outline-variant text-secondary hover:bg-surface-container-low"
                 }`}
               >
                 💵 Tunai (Cash)
@@ -488,8 +666,10 @@ export default function PesananBaruPage() {
               <button
                 type="button"
                 onClick={() => { setPaymentMethod("qris"); setAmountPaid(""); setError(""); }}
-                className={`flex-1 py-2 border rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  paymentMethod === "qris" ? "border-orange-500 bg-orange-50 text-orange-600" : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                className={`flex-1 py-2 border rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  paymentMethod === "qris"
+                    ? "border-primary bg-primary/5 text-primary border-2"
+                    : "border-outline-variant text-secondary hover:bg-surface-container-low"
                 }`}
               >
                 📱 QRIS
@@ -498,12 +678,12 @@ export default function PesananBaruPage() {
           </div>
 
           {/* Payment inputs */}
-          <div className="space-y-2 bg-gray-50/50 p-3 rounded-xl border border-gray-100">
+          <div className="space-y-2 bg-surface-container-low p-3 rounded-lg border border-surface-container-high">
             <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
               <button
                 type="button"
                 onClick={() => handleQuickCash(total)}
-                className="bg-white px-2.5 py-1 border border-gray-200 rounded-lg text-xxs font-bold text-gray-600 hover:bg-gray-100 cursor-pointer whitespace-nowrap"
+                className="bg-surface-container-lowest px-2.5 py-1 border border-outline rounded text-xxs font-bold text-secondary hover:bg-surface-container cursor-pointer whitespace-nowrap transition-colors"
               >
                 Uang Pas
               </button>
@@ -512,7 +692,7 @@ export default function PesananBaruPage() {
                   key={amt}
                   type="button"
                   onClick={() => handleQuickCash(amt)}
-                  className="bg-white px-2.5 py-1 border border-gray-200 rounded-lg text-xxs font-bold text-gray-600 hover:bg-gray-100 cursor-pointer whitespace-nowrap"
+                  className="bg-surface-container-lowest px-2.5 py-1 border border-outline rounded text-xxs font-bold text-secondary hover:bg-surface-container cursor-pointer whitespace-nowrap transition-colors"
                 >
                   {amt.toLocaleString("id-ID")}
                 </button>
@@ -520,7 +700,7 @@ export default function PesananBaruPage() {
             </div>
 
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-bold">Bayar Rp</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-secondary font-bold">Bayar Rp</span>
               <input
                 type="text"
                 inputMode="numeric"
@@ -531,12 +711,12 @@ export default function PesananBaruPage() {
                   setError("");
                 }}
                 placeholder="Masukkan nominal"
-                className="w-full pl-18 pr-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 bg-white"
+                className="w-full pl-18 pr-4 py-2 border border-outline rounded-lg text-xs font-bold text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
               />
             </div>
 
             {changeGiven > 0 && (
-              <div className="flex justify-between text-green-600 font-bold text-xs pt-1 border-t border-dashed border-gray-200">
+              <div className="flex justify-between text-tertiary font-bold text-xs pt-1 border-t border-dashed border-outline">
                 <span>Kembalian Kasir</span>
                 <span>{formatRupiah(changeGiven)}</span>
               </div>
@@ -544,17 +724,17 @@ export default function PesananBaruPage() {
           </div>
 
           {error && (
-            <p className="text-red-500 text-xs font-medium text-center">{error}</p>
+            <p className="text-error text-xs font-semibold text-center">{error}</p>
           )}
 
           {/* Checkout Submit */}
           <button
             onClick={handleCheckout}
             disabled={isSubmitting || success || cart.length === 0}
-            className={`w-full py-3.5 rounded-2xl text-white font-bold text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${
+            className={`w-full py-3.5 rounded-lg text-white font-bold text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${
               success
-                ? "bg-green-500"
-                : "bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 shadow-lg shadow-orange-200"
+                ? "bg-tertiary shadow-lg"
+                : "bg-primary hover:bg-primary-dark disabled:bg-surface-container-highest disabled:text-secondary shadow-active"
             }`}
           >
             {isSubmitting ? (
@@ -576,15 +756,15 @@ export default function PesananBaruPage() {
 
       {/* ── MODIFIERS SELECTION MODAL ── */}
       {activeItemForModifiers && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] overflow-hidden flex items-end sm:items-center justify-center sm:p-4">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
             onClick={() => setActiveItemForModifiers(null)}
           />
 
-          {/* Dialog */}
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden z-10 p-6 flex flex-col justify-between animate-scale-up">
+          {/* Dialog — bottom sheet on mobile, centered card on sm+ */}
+          <div className="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md z-10 p-5 sm:p-6 flex flex-col animate-scale-up" style={{ maxHeight: "90dvh" }}>
             <div>
               <div className="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
                 <div>
@@ -602,7 +782,7 @@ export default function PesananBaruPage() {
               </div>
 
               {/* Modifiers List checkboxes */}
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              <div className="space-y-2 overflow-y-auto pr-1" style={{ maxHeight: "40dvh" }}>
                 {currentItemModifiers.length === 0 ? (
                   <p className="text-gray-400 text-xs text-center py-4">Tidak ada opsi tambahan untuk menu ini.</p>
                 ) : (
