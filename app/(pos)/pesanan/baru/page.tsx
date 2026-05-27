@@ -226,10 +226,10 @@ export default function PesananBaruPage() {
   const totalItems = cart.reduce((s, c) => s + c.quantity, 0);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-dvh md:h-screen md:overflow-hidden bg-gray-50">
+    <div className="relative flex flex-col md:flex-row min-h-dvh md:h-screen md:overflow-hidden bg-surface-container-low font-sans">
       
       {/* ── LEFT PANEL: MENU & SELECTION ── */}
-      <div className="flex-1 md:w-3/5 lg:w-2/3 flex flex-col p-4 md:p-6 overflow-y-auto md:border-r border-gray-200 pb-28 md:pb-6">
+      <div className="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto pb-28 md:pb-6 md:pr-[27rem] transition-all">
         <div className="flex flex-col gap-4 mb-5">
           <div className="flex items-center justify-between">
             <div>
@@ -501,7 +501,7 @@ export default function PesananBaruPage() {
       </div>
 
       {/* ── RIGHT PANEL: DESKTOP ONLY ── */}
-      <div className="hidden md:flex w-2/5 lg:w-1/3 bg-surface-container-lowest p-5 border-l border-surface-container-high flex-col justify-between shadow-ambient md:h-screen md:sticky md:top-0">
+      <div className="hidden md:flex absolute top-4 right-4 bottom-4 w-[25rem] bg-surface-container-lowest p-5 border border-surface-container-high flex-col justify-between shadow-ambient rounded-2xl z-30 transition-all">
         
         {/* Upper Summary Section */}
         <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
@@ -756,24 +756,24 @@ export default function PesananBaruPage() {
 
       {/* ── MODIFIERS SELECTION MODAL ── */}
       {activeItemForModifiers && (
-        <div className="fixed inset-0 z-[60] overflow-hidden flex items-end sm:items-center justify-center sm:p-4">
+        <div className="fixed inset-0 z-[60] overflow-hidden flex items-end md:items-center justify-center md:p-4">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setActiveItemForModifiers(null)}
           />
 
-          {/* Dialog — bottom sheet on mobile, centered card on sm+ */}
-          <div className="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md z-10 p-5 sm:p-6 flex flex-col animate-scale-up" style={{ maxHeight: "90dvh" }}>
+          {/* Dialog — bottom sheet on mobile, centered card on md+ */}
+          <div className="relative bg-surface-container-lowest rounded-t-3xl md:rounded-2xl shadow-2xl w-full md:max-w-md z-10 p-5 md:p-6 flex flex-col animate-scale-up" style={{ maxHeight: "90dvh" }}>
             <div>
-              <div className="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
+              <div className="flex justify-between items-start border-b border-surface-container-high pb-3 mb-4">
                 <div>
-                  <h3 className="text-base font-bold text-gray-800">Opsi Tambahan Menu</h3>
-                  <p className="text-orange-500 font-bold text-sm mt-0.5">{activeItemForModifiers.name}</p>
+                  <h3 className="text-base font-bold text-on-surface uppercase tracking-wide">Opsi Tambahan Menu</h3>
+                  <p className="text-primary font-bold text-sm mt-0.5">{activeItemForModifiers.name}</p>
                 </div>
                 <button
                   onClick={() => setActiveItemForModifiers(null)}
-                  className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-700 cursor-pointer"
+                  className="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary hover:text-on-surface cursor-pointer transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -784,7 +784,7 @@ export default function PesananBaruPage() {
               {/* Modifiers List checkboxes */}
               <div className="space-y-2 overflow-y-auto pr-1" style={{ maxHeight: "40dvh" }}>
                 {currentItemModifiers.length === 0 ? (
-                  <p className="text-gray-400 text-xs text-center py-4">Tidak ada opsi tambahan untuk menu ini.</p>
+                  <p className="text-secondary text-xs text-center py-4">Tidak ada opsi tambahan untuk menu ini.</p>
                 ) : (
                   currentItemModifiers.map((mod) => {
                     const isChecked = tempSelectedModifiers.some((m) => m.id === mod.id);
@@ -800,13 +800,13 @@ export default function PesananBaruPage() {
                             setTempSelectedModifiers((prev) => [...prev, mod]);
                           }
                         }}
-                        className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl text-left cursor-pointer transition-all ${
-                          isChecked ? "border-orange-500 bg-orange-50 text-orange-600 font-semibold" : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                        className={`w-full flex items-center justify-between px-4 py-3 border rounded-lg text-left cursor-pointer transition-all ${
+                          isChecked ? "border-primary bg-primary/5 text-primary font-semibold" : "border-outline-variant text-secondary hover:bg-surface-container-low"
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-4 h-4 rounded border flex items-center justify-center ${
-                            isChecked ? "bg-orange-500 border-orange-500" : "border-gray-300 bg-white"
+                            isChecked ? "bg-primary border-primary" : "border-outline bg-surface-container-lowest"
                           }`}>
                             {isChecked && (
                               <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
@@ -827,31 +827,31 @@ export default function PesananBaruPage() {
 
               {/* Custom Notes */}
               <div className="mt-4">
-                <label htmlFor="modal-notes" className="block text-xxs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Catatan Tambahan</label>
+                <label htmlFor="modal-notes" className="block text-xxs font-bold text-secondary uppercase tracking-wider mb-1.5">Catatan Tambahan</label>
                 <input
                   id="modal-notes"
                   type="text"
                   value={tempNotes}
                   onChange={(e) => setTempNotes(e.target.value)}
                   placeholder="Contoh: Sambal dipisah, less sugar..."
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs text-gray-700 focus:outline-none focus:border-orange-400 bg-gray-50/30"
+                  className="w-full px-3 py-2 border border-outline rounded-lg text-xs text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-low/30 transition-all"
                 />
               </div>
             </div>
 
             {/* Footer */}
-            <div className="flex gap-3 border-t border-gray-100 pt-4 mt-5">
+            <div className="flex gap-3 border-t border-surface-container-high pt-4 mt-5">
               <button
                 type="button"
                 onClick={() => setActiveItemForModifiers(null)}
-                className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-500 font-bold text-xs hover:bg-gray-50 active:scale-[0.98] cursor-pointer"
+                className="flex-1 py-2.5 border border-outline rounded-lg text-secondary font-bold text-xs hover:bg-surface-container active:scale-[0.98] cursor-pointer transition-colors"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleConfirmModifiers}
-                className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-orange-100 active:scale-[0.98] cursor-pointer"
+                className="flex-1 py-2.5 bg-primary hover:bg-primary-dark text-on-primary font-bold text-xs rounded-lg shadow-active active:scale-[0.98] cursor-pointer transition-all"
               >
                 Tambah ke Orderan
               </button>

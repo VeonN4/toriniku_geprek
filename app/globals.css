@@ -5,8 +5,8 @@
 :root {
   --background: #f8f9fa;
   --foreground: #191c1d;
-  --primary: #a04100;
-  --primary-dark: #7a3000;
+  --primary: #f97316;
+  --primary-dark: #ea580c;
 }
 
 @theme {
@@ -19,16 +19,16 @@
   --color-surface-container-high: #e7e8e9;
   --color-surface-container-highest: #e1e3e4;
   --color-on-surface: #191c1d;
-  --color-on-surface-variant: #5a4136;
+  --color-on-surface-variant: #475569;
   --color-inverse-surface: #2e3132;
   --color-inverse-on-surface: #f0f1f2;
-  --color-outline: #8e7164;
-  --color-outline-variant: #e2bfb0;
-  --color-surface-tint: #a04100;
-  --color-primary: #a04100;
+  --color-outline: #94a3b8;
+  --color-outline-variant: #e2e8f0;
+  --color-surface-tint: #f97316;
+  --color-primary: #f97316;
   --color-on-primary: #ffffff;
-  --color-primary-container: #ff6b00;
-  --color-on-primary-container: #572000;
+  --color-primary-container: #fb923c;
+  --color-on-primary-container: #351000;
   --color-inverse-primary: #ffb693;
   --color-secondary: #535f71;
   --color-on-secondary: #ffffff;

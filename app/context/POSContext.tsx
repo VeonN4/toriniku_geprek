@@ -79,6 +79,7 @@ interface POSContextType {
   discountsLoading: boolean;
   addDiscount: (discount: Omit<Discount, "id">) => Promise<void>;
   toggleDiscountActive: (id: string, isActive: boolean) => Promise<void>;
+  updateDiscount: (id: string, discount: Omit<Discount, "id">) => Promise<void>;
   deleteDiscount: (id: string) => Promise<void>;
   categories: Category[];
   categoriesLoading: boolean;
@@ -423,6 +424,21 @@ export function POSProvider({ children }: { children: ReactNode }) {
     if (!error) setDiscounts((prev) => prev.filter((d) => d.id !== id));
   };
 
+  const updateDiscount = async (id: string, item: Omit<Discount, "id">) => {
+    const { error } = await supabase
+      .from("discounts")
+      .update({
+        name: item.name,
+        type: item.type,
+        value: item.value,
+        is_active: item.isActive,
+        expires_at: item.expiresAt || null,
+      })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    if (!error) await fetchDiscounts();
+  };
+
   // ── Modifier mutations ───────────────────────────────────────────────────────
 
   const addModifier = async (menuItemId: string, name: string, priceDelta: number) => {
@@ -566,6 +582,7 @@ export function POSProvider({ children }: { children: ReactNode }) {
         discountsLoading,
         addDiscount,
         toggleDiscountActive,
+        updateDiscount,
         deleteDiscount,
         categories,
         categoriesLoading,

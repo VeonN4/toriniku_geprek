@@ -53,7 +53,7 @@ function EditRow({
   };
 
   return (
-    <div className="bg-orange-50 border border-orange-200 rounded-2xl p-3 space-y-2">
+    <div className="bg-primary/5 border border-primary/20 rounded-2xl p-3 space-y-2 animate-scale-up">
       <div className="flex gap-2">
         <input
           ref={inputRef}
@@ -62,10 +62,10 @@ function EditRow({
           onChange={(e) => { setName(e.target.value); setErr(""); }}
           onKeyDown={(e) => e.key === "Enter" && handleSave()}
           placeholder="Nama modifier"
-          className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 bg-white"
+          className="flex-1 px-3 py-2 border border-outline-variant rounded-lg text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
         />
         <div className="relative w-28 flex-shrink-0">
-          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-semibold">Rp</span>
+          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-secondary font-semibold">Rp</span>
           <input
             type="text"
             inputMode="numeric"
@@ -73,24 +73,24 @@ function EditRow({
             onChange={(e) => setPrice(formatPriceInput(e.target.value))}
             onKeyDown={(e) => e.key === "Enter" && handleSave()}
             placeholder="0"
-            className="w-full pl-8 pr-2 py-2 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 bg-white"
+            className="w-full pl-8 pr-2 py-2 border border-outline-variant rounded-lg text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
           />
         </div>
       </div>
-      {err && <p className="text-red-500 text-xs font-medium">{err}</p>}
+      {err && <p className="text-error text-xs font-semibold">{err}</p>}
       <div className="flex gap-2">
         <button
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="flex-1 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-60 cursor-pointer"
+          className="flex-1 py-2 bg-primary hover:bg-primary-dark text-on-primary rounded-lg text-sm font-semibold transition-all disabled:opacity-60 cursor-pointer shadow-active"
         >
           {saving ? "Menyimpan..." : "Simpan"}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-sm font-semibold transition-colors cursor-pointer"
+          className="flex-1 py-2 bg-surface-container hover:bg-surface-container-high text-secondary rounded-lg text-sm font-semibold transition-all cursor-pointer"
         >
           Batal
         </button>
@@ -123,8 +123,8 @@ function AddRow({ onAdd }: { onAdd: (name: string, priceDelta: number) => Promis
   };
 
   return (
-    <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100 space-y-2">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tambah Modifier Baru</p>
+    <div className="bg-surface-container-low rounded-2xl p-3 border border-surface-container-high space-y-2">
+      <p className="text-xs font-bold text-secondary uppercase tracking-wide">Tambah Modifier Baru</p>
       <div className="flex gap-2">
         <input
           id="input-new-mod-name"
@@ -133,10 +133,10 @@ function AddRow({ onAdd }: { onAdd: (name: string, priceDelta: number) => Promis
           onChange={(e) => { setName(e.target.value); setErr(""); }}
           onKeyDown={(e) => e.key === "Enter" && handleAdd()}
           placeholder="Nama modifier (mis: Extra Keju)"
-          className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 bg-white"
+          className="flex-1 px-3 py-2.5 border border-outline-variant rounded-lg text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
         />
         <div className="relative w-28 flex-shrink-0">
-          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-semibold">Rp</span>
+          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-secondary font-semibold">Rp</span>
           <input
             id="input-new-mod-price"
             type="text"
@@ -145,17 +145,17 @@ function AddRow({ onAdd }: { onAdd: (name: string, priceDelta: number) => Promis
             onChange={(e) => setPrice(formatPriceInput(e.target.value))}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="0"
-            className="w-full pl-8 pr-2 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 bg-white"
+            className="w-full pl-8 pr-2 py-2.5 border border-outline-variant rounded-lg text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
           />
         </div>
       </div>
-      {err && <p className="text-red-500 text-xs font-medium">{err}</p>}
+      {err && <p className="text-error text-xs font-semibold">{err}</p>}
       <button
         id="btn-add-new-modifier"
         type="button"
         onClick={handleAdd}
         disabled={adding}
-        className="w-full py-2.5 border-2 border-dashed border-orange-300 text-orange-500 hover:border-orange-400 hover:bg-orange-50 rounded-xl text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+        className="w-full py-2.5 border-2 border-dashed border-primary/40 text-primary hover:border-primary hover:bg-primary/5 rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
       >
         {adding ? (
           <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -229,42 +229,37 @@ export default function ModifierDrawer({ item, onClose }: Props) {
   if (!item) return null;
 
   return (
-    <>
+    <div className={`fixed inset-0 z-50 overflow-hidden flex items-end md:items-center justify-center md:p-4 transition-all duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
       {/* Backdrop */}
       <div
         ref={backdropRef}
         onClick={handleClose}
-        className="fixed inset-0 z-40 transition-opacity duration-300"
-        style={{
-          backgroundColor: "rgba(0,0,0,0.4)",
-          opacity: open ? 1 : 0,
-          backdropFilter: "blur(2px)",
-        }}
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
       />
 
-      {/* Sheet */}
+      {/* Sheet / Modal dialog container */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out flex flex-col"
+        className="relative bg-surface-container-lowest shadow-2xl flex flex-col w-full z-10 transition-all duration-300 ease-out rounded-t-3xl md:rounded-2xl md:max-w-md"
         style={{
-          transform: open ? "translateY(0)" : "translateY(100%)",
+          transform: open ? "translateY(0) scale(1)" : "translateY(100%) scale(0.95)",
           maxHeight: "85dvh",
         }}
       >
-        {/* Drag handle */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 bg-gray-200 rounded-full" />
+        {/* Drag handle — visible on mobile only */}
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0 md:hidden">
+          <div className="w-12 h-1 bg-surface-container-highest rounded-full" />
         </div>
 
         {/* Header */}
-        <div className="px-5 pb-4 pt-2 border-b border-gray-100 flex items-start justify-between flex-shrink-0">
+        <div className="px-5 pb-4 pt-4 md:pt-5 border-b border-surface-container-high flex items-start justify-between flex-shrink-0">
           <div>
-            <h2 className="text-base font-bold text-gray-800">Modifier</h2>
-            <p className="text-xs text-orange-500 font-semibold mt-0.5 truncate max-w-xs">{item.name}</p>
+            <h2 className="text-base font-bold text-on-surface uppercase tracking-wide">Modifier</h2>
+            <p className="text-xs text-primary font-bold mt-0.5 truncate max-w-[15rem] md:max-w-xs">{item.name}</p>
           </div>
           <button
             id="btn-close-modifier-drawer"
             onClick={handleClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 active:scale-90 cursor-pointer text-gray-400 hover:text-gray-600 mt-0.5"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container active:scale-90 cursor-pointer text-secondary hover:text-on-surface mt-0.5 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -277,35 +272,35 @@ export default function ModifierDrawer({ item, onClose }: Props) {
 
           {/* Modifier list */}
           {itemModifiers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-gray-300">
-              <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <div className="flex flex-col items-center justify-center py-8 text-secondary">
+              <svg className="w-12 h-12 mb-2 opacity-35" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              <p className="text-sm font-medium text-gray-400">Belum ada modifier</p>
-              <p className="text-xs text-gray-300 mt-0.5">Tambah pilihan di bawah</p>
+              <p className="text-sm font-medium">Belum ada modifier</p>
+              <p className="text-xs mt-0.5 text-secondary/70">Tambah pilihan di bawah</p>
             </div>
           ) : (
             <div className="space-y-2">
               {deleteErr && (
-                <p className="text-red-500 text-xs font-medium bg-red-50 px-3 py-2 rounded-xl">{deleteErr}</p>
+                <p className="text-error text-xs font-semibold bg-error-container/20 px-3 py-2 rounded-lg">{deleteErr}</p>
               )}
               {itemModifiers.map((mod) =>
                 editingId === mod.id ? (
                   <EditRow
-                    key={mod.id}
-                    mod={mod}
-                    onSave={(name, price) => handleUpdate(mod.id, name, price)}
-                    onCancel={() => setEditingId(null)}
-                  />
+                      key={mod.id}
+                      mod={mod}
+                      onSave={(name, price) => handleUpdate(mod.id, name, price)}
+                      onCancel={() => setEditingId(null)}
+                    />
                 ) : (
                   <div
                     key={mod.id}
                     id={`modifier-row-${mod.id}`}
-                    className="flex items-center justify-between bg-orange-50 border border-orange-100 rounded-2xl px-4 py-3 group"
+                    className="flex items-center justify-between bg-primary/5 border border-primary/10 rounded-2xl px-4 py-3 group transition-all"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-800 truncate">{mod.name}</p>
-                      <p className="text-xs font-medium text-orange-500 mt-0.5">{formatRupiah(mod.priceDelta)}</p>
+                      <p className="text-sm font-semibold text-on-surface truncate">{mod.name}</p>
+                      <p className="text-xs font-bold text-primary mt-0.5">{formatRupiah(mod.priceDelta)}</p>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                       {/* Edit */}
@@ -313,7 +308,7 @@ export default function ModifierDrawer({ item, onClose }: Props) {
                         id={`btn-edit-mod-${mod.id}`}
                         type="button"
                         onClick={() => { setEditingId(mod.id); setDeleteErr(""); }}
-                        className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-300 hover:text-orange-500 hover:bg-orange-100 transition-colors cursor-pointer"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg text-secondary hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                         title="Edit modifier"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -326,7 +321,7 @@ export default function ModifierDrawer({ item, onClose }: Props) {
                         type="button"
                         onClick={() => handleDelete(mod.id)}
                         disabled={deletingId === mod.id}
-                        className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-40"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg text-secondary hover:text-error hover:bg-error/10 transition-colors cursor-pointer disabled:opacity-40"
                         title="Hapus modifier"
                       >
                         {deletingId === mod.id ? (
@@ -354,6 +349,6 @@ export default function ModifierDrawer({ item, onClose }: Props) {
           <div className="h-2" />
         </div>
       </div>
-    </>
+    </div>
   );
 }
