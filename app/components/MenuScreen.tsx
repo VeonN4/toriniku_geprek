@@ -3,14 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePOS, MenuItem } from "../context/POSContext";
+import { formatRupiah } from "../../lib/utils/format";
 import ModifierDrawer from "./ModifierDrawer";
 
 function MenuItemCard({ item, onOpenModifiers }: { item: MenuItem; onOpenModifiers: (item: MenuItem) => void }) {
   const { updateMenuItemStatus, deleteMenuItem } = usePOS();
   const isFood = item.category === "food";
   const isHabis = item.status === "Habis";
-  const formatRupiah = (n: number) => "Rp " + n.toLocaleString("id-ID");
-
   return (
     <div
       id={`menu-card-${item.id}`}

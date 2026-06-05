@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePOS } from "../context/POSContext";
+import { formatPriceInput, formatRupiahDelta } from "../../lib/utils/format";
 
 interface DraftModifier {
   id: string; // local key only, not sent to DB
@@ -35,11 +36,6 @@ export default function TambahMenuScreen() {
   const [modError, setModError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const formatPrice = (val: string) => {
-    const digits = val.replace(/\D/g, "");
-    return digits ? parseInt(digits).toLocaleString("id-ID") : "";
-  };
 
   // ── Add Modifier to local draft list ─────────────────────────
   const handleAddModifier = () => {
@@ -110,9 +106,6 @@ export default function TambahMenuScreen() {
     }
   };
 
-  const formatRupiah = (n: number) =>
-    n === 0 ? "Gratis" : (n > 0 ? "+" : "") + "Rp " + Math.abs(n).toLocaleString("id-ID");
-
   return (
     <div className="flex flex-col min-h-full">
       {/* ── Header ── */}
@@ -172,7 +165,7 @@ export default function TambahMenuScreen() {
                 type="text"
                 inputMode="numeric"
                 value={price}
-                onChange={(e) => { setPrice(formatPrice(e.target.value)); setError(""); }}
+                onChange={(e) => { setPrice(formatPriceInput(e.target.value)); setError(""); }}
                 placeholder="Contoh: 18.000"
                 className="w-full pl-10 pr-4 py-3 border border-outline rounded-xl text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-container-lowest transition-all"
               />
@@ -264,7 +257,7 @@ export default function TambahMenuScreen() {
                 >
                   <div>
                     <p className="text-sm font-semibold text-on-surface">{mod.name}</p>
-                    <p className="text-xs text-primary font-bold">{formatRupiah(mod.priceDelta)}</p>
+                    <p className="text-xs text-primary font-bold">{formatRupiahDelta(mod.priceDelta)}</p>
                   </div>
                   <button
                     type="button"
@@ -301,7 +294,7 @@ export default function TambahMenuScreen() {
                   type="text"
                   inputMode="numeric"
                   value={modPrice}
-                  onChange={(e) => setModPrice(formatPrice(e.target.value))}
+                  onChange={(e) => setModPrice(formatPriceInput(e.target.value))}
                   onKeyDown={(e) => e.key === "Enter" && handleAddModifier()}
                   placeholder="0"
                   className="w-full pl-8 pr-2 py-2.5 border border-outline rounded-xl text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-container-lowest transition-all"

@@ -2,22 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePOS, Modifier, MenuItem } from "../context/POSContext";
+import { formatRupiahDelta, formatPriceInput, parsePrice } from "../../lib/utils/format";
 
 interface Props {
   item: MenuItem | null;
   onClose: () => void;
 }
-
-const formatRupiah = (n: number) =>
-  n === 0 ? "Gratis" : (n > 0 ? "+" : "") + "Rp " + Math.abs(n).toLocaleString("id-ID");
-
-const parsePrice = (val: string): number =>
-  parseInt(val.replace(/\D/g, "") || "0", 10);
-
-const formatPriceInput = (val: string): string => {
-  const digits = val.replace(/\D/g, "");
-  return digits ? parseInt(digits).toLocaleString("id-ID") : "";
-};
 
 // ── EditRow — inline editor for one modifier ──────────────────────────────────
 
@@ -300,7 +290,7 @@ export default function ModifierDrawer({ item, onClose }: Props) {
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-on-surface truncate">{mod.name}</p>
-                      <p className="text-xs font-bold text-primary mt-0.5">{formatRupiah(mod.priceDelta)}</p>
+                      <p className="text-xs font-bold text-primary mt-0.5">{formatRupiahDelta(mod.priceDelta)}</p>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                       {/* Edit */}

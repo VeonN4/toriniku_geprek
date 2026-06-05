@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { usePOS } from "../context/POSContext";
+import { formatRupiah } from "../../lib/utils/format";
 
 function Skeleton({ className }: { className?: string }) {
   return (
@@ -24,8 +25,6 @@ export default function BerandaScreen() {
 
   const today = new Date();
   const dateStr = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${String(today.getFullYear()).slice(2)}`;
-  const formatRupiah = (n: number) => "Rp " + n.toLocaleString("id-ID");
-
   return (
     <div className="flex flex-col min-h-full">
       {/* Header */}

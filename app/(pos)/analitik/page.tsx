@@ -1,27 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { formatRupiahShort, formatRupiah } from "../../../lib/utils/format";
 
 type Period = "7d" | "30d" | "90d";
 
 interface DailyRevenue {
-  date: string; // "YYYY-MM-DD"
+  date: string;
   total: number;
 }
 
 interface MenuStat {
   name: string;
   quantity: number;
-}
-
-function formatRupiah(n: number) {
-  if (n >= 1_000_000) return `Rp ${(n / 1_000_000).toFixed(1)}jt`;
-  if (n >= 1_000) return `Rp ${(n / 1_000).toFixed(0)}rb`;
-  return `Rp ${n.toLocaleString("id-ID")}`;
-}
-
-function formatRupiahFull(n: number) {
-  return "Rp " + n.toLocaleString("id-ID");
 }
 
 // ─── Sparkline / Line Chart ────────────────────────────────────────────────────
@@ -99,7 +90,7 @@ function LineChart({ data }: { data: DailyRevenue[] }) {
             fill="currentColor"
             fillOpacity={0.45}
           >
-            {formatRupiah(t.val)}
+            {formatRupiahShort(t.val)}
           </text>
         </g>
       ))}
@@ -172,7 +163,7 @@ function LineChart({ data }: { data: DailyRevenue[] }) {
                 fill="var(--color-surface)"
                 fontWeight={700}
               >
-                {formatRupiahFull(p.total)}
+                {formatRupiah(p.total)}
               </text>
             </g>
           )}
@@ -313,13 +304,13 @@ export default function AnalitikPage() {
           {[
             {
               label: "Total Pendapatan",
-              value: loading ? "—" : formatRupiahFull(totalRevenue),
+              value: loading ? "—" : formatRupiah(totalRevenue),
               sub: `dalam ${period === "7d" ? "7" : period === "30d" ? "30" : "90"} hari`,
               color: "text-primary",
             },
             {
               label: "Rata-rata/Hari",
-              value: loading ? "—" : formatRupiah(avgDaily),
+              value: loading ? "—" : formatRupiahShort(avgDaily),
               sub: "rata-rata harian",
               color: "text-tertiary",
             },

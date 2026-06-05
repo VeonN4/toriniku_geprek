@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePOS } from "../context/POSContext";
+import { formatPriceInput } from "../../lib/utils/format";
 
 export default function PesananBaruScreen() {
   const { addOrder } = usePOS();
@@ -13,11 +14,6 @@ export default function PesananBaruScreen() {
   const [total, setTotal] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-
-  const formatPrice = (val: string) => {
-    const digits = val.replace(/\D/g, "");
-    return digits ? parseInt(digits).toLocaleString("id-ID") : "";
-  };
 
   const handleSave = () => {
     if (!customerName.trim()) {
@@ -175,7 +171,7 @@ export default function PesananBaruScreen() {
                 type="text"
                 inputMode="numeric"
                 value={total}
-                onChange={(e) => setTotal(formatPrice(e.target.value))}
+                onChange={(e) => setTotal(formatPriceInput(e.target.value))}
                 placeholder="Contoh: 50.000"
                 className="w-full pl-10 pr-4 py-3 border border-outline rounded-xl text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-container-lowest transition-all"
               />

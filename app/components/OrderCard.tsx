@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { usePOS } from "../context/POSContext";
 import type { Order, OrderStatus } from "../context/POSContext";
+import { formatRupiah } from "../../lib/utils/format";
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   Baru: "bg-surface-container text-on-surface-variant font-semibold",
@@ -17,10 +18,6 @@ const statusOptions: OrderStatus[] = [
   "Selesai",
   "Dibatalkan",
 ];
-
-function formatRupiah(n: number) {
-  return "Rp " + n.toLocaleString("id-ID");
-}
 
 export default function OrderCard({ order }: { order: Order }) {
   const { updateOrderStatus } = usePOS();
