@@ -8,6 +8,7 @@ import {
   Modifier,
   Discount,
 } from "../../../context/POSContext";
+import { formatRupiah, formatPriceInput } from "../../../../lib/utils/format";
 
 function Skeleton({ className }: { className?: string }) {
   return (
@@ -63,8 +64,6 @@ export default function PesananBaruPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isForLater, setIsForLater] = useState(false);
-
-  const formatRupiah = (n: number) => "Rp " + n.toLocaleString("id-ID");
 
   // ── Modifiers belonging to the current menu item ──
   const currentItemModifiers = useMemo(() => {
@@ -700,8 +699,7 @@ export default function PesananBaruPage() {
                     inputMode="numeric"
                     value={amountPaid}
                     onChange={(e) => {
-                      const d = e.target.value.replace(/\D/g, "");
-                      setAmountPaid(d ? parseInt(d).toLocaleString("id-ID") : "");
+                      setAmountPaid(formatPriceInput(e.target.value));
                       setError("");
                     }}
                     placeholder="Masukkan nominal"
@@ -1037,10 +1035,7 @@ export default function PesananBaruPage() {
                   inputMode="numeric"
                   value={amountPaid}
                   onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, "");
-                    setAmountPaid(
-                      digits ? parseInt(digits).toLocaleString("id-ID") : "",
-                    );
+                    setAmountPaid(formatPriceInput(e.target.value));
                     setError("");
                   }}
                   placeholder="Masukkan nominal"
