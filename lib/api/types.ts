@@ -9,13 +9,26 @@ export interface MenuItem {
   note?: string;
 }
 
+export interface OrderItem {
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  notes?: string;
+}
+
 export interface Order {
   id: string;
   orderNumber: string;
+  orderType: "dine_in" | "takeaway";
   customerName: string;
   items: string;
+  itemList: OrderItem[];
   notes?: string;
   total: number;
+  subtotal: number;
+  discountAmount: number;
+  tax: number;
+  paymentMethod: string;
   time: string;
   status: OrderStatus;
   createdAt: string;

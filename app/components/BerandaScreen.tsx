@@ -1,7 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { usePOS } from "../context/POSContext";
+import { usePOS, OrderStatus } from "../context/POSContext";
 import { formatRupiah } from "../../lib/utils/format";
 
 function Skeleton({ className }: { className?: string }) {
@@ -9,6 +10,23 @@ function Skeleton({ className }: { className?: string }) {
     <div className={`animate-pulse bg-gray-200 rounded-lg ${className}`} />
   );
 }
+
+function isToday(dateStr: string) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  );
+}
+
+const STATUS_BADGE: Record<OrderStatus, string> = {
+  Baru: "bg-surface-container text-on-surface-variant",
+  Diproses: "bg-secondary-container text-on-secondary-container",
+  Selesai: "bg-tertiary-container/30 text-on-tertiary-container",
+  Dibatalkan: "bg-error-container text-on-error-container",
+};
 
 export default function BerandaScreen() {
   const { orders, menuItems, ordersLoading, menuLoading, session } = usePOS();
@@ -19,12 +37,24 @@ export default function BerandaScreen() {
     (o) => o.status === "Baru" || o.status === "Diproses",
   );
   const needsProcessing = orders.filter((o) => o.status === "Baru");
-  const completedOrders = orders.filter((o) => o.status === "Selesai");
-  const totalRevenue = completedOrders.reduce((sum, o) => sum + o.total, 0);
+
+  const todayCompleted = useMemo(
+    () => orders.filter((o) => o.status === "Selesai" && isToday(o.createdAt)),
+    [orders],
+  );
+  const todayRevenue = todayCompleted.reduce((sum, o) => sum + o.total, 0);
+  const todayOrderCount = todayCompleted.length;
+
   const activeMenuCount = menuItems.filter((m) => m.status === "Ready").length;
+
+  const recentOrders = useMemo(
+    () => orders.slice(0, 5),
+    [orders],
+  );
 
   const today = new Date();
   const dateStr = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${String(today.getFullYear()).slice(2)}`;
+
   return (
     <div className="flex flex-col min-h-full">
       {/* Header */}
@@ -35,7 +65,7 @@ export default function BerandaScreen() {
           <div>
             <h1 className="text-white text-2xl font-bold">Toriniku Geprek</h1>
             <p className="text-on-primary/80 text-sm mt-0.5">
-              Wilujeng Sumping, {userEmail.split("@")[0]}! 👋
+              Wilujeng Sumping, {userEmail.split("@")[0]}!
             </p>
           </div>
         </div>
@@ -44,9 +74,8 @@ export default function BerandaScreen() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-on-primary/80 text-xs font-semibold uppercase tracking-wide">
-                Tanggal Hari Ini
+                {dateStr}
               </p>
-              <p className="text-white text-sm font-bold mt-1">{dateStr}</p>
             </div>
             <svg
               className="w-5 h-5 text-white/80"
@@ -68,10 +97,10 @@ export default function BerandaScreen() {
             </svg>
           </div>
           <p className="text-on-primary/80 text-xs font-semibold uppercase tracking-wide mt-3">
-            Estimasi Laba Bersih
+            Pendapatan Hari Ini
           </p>
           <p className="text-white text-2xl md:text-3xl font-bold mt-1">
-            {formatRupiah(totalRevenue)}
+            {ordersLoading ? "..." : formatRupiah(todayRevenue)}
           </p>
         </div>
       </div>
@@ -136,7 +165,7 @@ export default function BerandaScreen() {
           </svg>
         </button>
 
-        {/* Quick actions */}
+        {/* Stats grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
           <button
             id="btn-tambah-pesanan"
@@ -170,7 +199,8 @@ export default function BerandaScreen() {
           </button>
 
           <button
-            id="btn-tambah-laba"
+            id="btn-lihat-menu"
+            onClick={() => router.push("/menu")}
             className="bg-surface-container-lowest rounded-2xl p-4 flex items-center gap-3 shadow-ambient hover:shadow-md active:scale-[0.98] text-left cursor-pointer transition-all"
           >
             <div className="w-10 h-10 bg-primary-container/20 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -181,15 +211,14 @@ export default function BerandaScreen() {
                 strokeWidth={2.5}
                 viewBox="0 0 24 24"
               >
-                <line x1="12" x2="12" y1="1" y2="23" strokeLinecap="round" />
-                <path
-                  strokeLinecap="round"
-                  d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
-                />
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
               </svg>
             </div>
             <span className="text-sm font-semibold text-on-surface-variant hover:text-on-surface">
-              + Laba 50K
+              Menu
             </span>
           </button>
 
@@ -215,34 +244,63 @@ export default function BerandaScreen() {
               <Skeleton className="h-7 w-8 mt-1 mb-1" />
             ) : (
               <p className="text-2xl font-bold text-primary mt-1">
-                {completedOrders.length}
+                {todayOrderCount}
               </p>
             )}
             <p className="text-xs text-outline">hari ini</p>
           </div>
         </div>
 
-        {/* Desktop CTA */}
-        <button
-          id="btn-pesanan-baru-desktop"
-          onClick={() => router.push("/pesanan/baru")}
-          className="hidden md:flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-semibold px-5 py-3 rounded-2xl shadow-active active:scale-[0.98] cursor-pointer transition-all"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 5v14m-7-7h14"
-            />
-          </svg>
-          Pesanan Baru
-        </button>
+        {/* Recent orders */}
+        <div className="bg-surface-container-lowest rounded-2xl shadow-ambient overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-outline-variant/40 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-on-surface">Pesanan Terbaru</h3>
+            <button
+              onClick={() => router.push("/pesanan")}
+              className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+            >
+              Lihat Semua
+            </button>
+          </div>
+          {ordersLoading ? (
+            <div className="p-5 space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          ) : recentOrders.length === 0 ? (
+            <p className="px-5 py-8 text-center text-sm text-outline">
+              Belum ada pesanan
+            </p>
+          ) : (
+            <div className="divide-y divide-outline-variant/30">
+              {recentOrders.map((order) => (
+                <button
+                  key={order.id}
+                  onClick={() => router.push("/pesanan")}
+                  className="w-full flex items-center gap-3 px-5 py-3 hover:bg-surface-container/50 active:bg-surface-container text-left cursor-pointer transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-on-surface truncate">
+                      #{order.orderNumber}
+                    </p>
+                    <p className="text-xxs text-outline truncate mt-0.5">
+                      {order.items}
+                    </p>
+                  </div>
+                  <span
+                    className={`text-xxs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${STATUS_BADGE[order.status]}`}
+                  >
+                    {order.status}
+                  </span>
+                  <span className="text-xs font-bold text-on-surface-variant flex-shrink-0">
+                    {formatRupiah(order.total)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* FAB — mobile only */}

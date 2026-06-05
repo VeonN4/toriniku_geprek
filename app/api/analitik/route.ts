@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   // ── 1. Daily revenue ──────────────────────────────────────────────────────────
   const { data: ordersData, error: ordersError } = await supabase
     .from("orders")
-    .select("total, created_at")
+    .select("total, order_type, created_at")
     .eq("status", "paid")
     .gte("created_at", sinceISO)
     .order("created_at", { ascending: true });
@@ -76,9 +76,34 @@ export async function GET(request: NextRequest) {
     .map(([name, quantity]) => ({ name, quantity }))
     .sort((a, b) => b.quantity - a.quantity);
 
-  // ── 3. Summary stats ──────────────────────────────────────────────────────────
   const totalRevenue = dailyRevenue.reduce((s, d) => s + d.total, 0);
   const avgDaily = dailyRevenue.length > 0 ? totalRevenue / dailyRevenue.length : 0;
+
+  // ── 3. Order count & type breakdown ──────────────────────────────────────────
+  const orderCount = ordersData?.length ?? 0;
+  const avgOrderValue = orderCount > 0 ? totalRevenue / orderCount : 0;
+
+  const dineInCount = ordersData?.filter((r: any) => r.order_type === "dine_in").length ?? 0;
+  const takeawayCount = orderCount - dineInCount;
+
+  // ── 4. Previous period comparison ────────────────────────────────────────────
+  const prevSince = new Date(since);
+  prevSince.setDate(prevSince.getDate() - days);
+  const prevSinceISO = prevSince.toISOString();
+
+  const { data: prevData } = await supabase
+    .from("orders")
+    .select("total")
+    .eq("status", "paid")
+    .gte("created_at", prevSinceISO)
+    .lt("created_at", sinceISO);
+
+  const prevRevenue = prevData?.reduce((s: number, r: any) => s + Number(r.total), 0) ?? 0;
+  const revenueChange = prevRevenue > 0
+    ? ((totalRevenue - prevRevenue) / prevRevenue) * 100
+    : totalRevenue > 0 ? 100 : 0;
+
+  // ── 5. Summary stats ──────────────────────────────────────────────────────────
   const peakDay = dailyRevenue.reduce(
     (best, d) => (d.total > best.total ? d : best),
     { date: "-", total: 0 }
@@ -87,7 +112,16 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     dailyRevenue,
     menuStats,
-    summary: { totalRevenue, avgDaily, peakDay },
+    summary: {
+      totalRevenue,
+      avgDaily,
+      peakDay,
+      orderCount,
+      avgOrderValue,
+      dineInCount,
+      takeawayCount,
+      revenueChange,
+    },
     error: ordersError?.message ?? null,
   });
 }

@@ -22,6 +22,7 @@ export async function fetchOrders(): Promise<Order[]> {
       created_at,
       order_items (
         quantity,
+        unit_price,
         notes,
         menu_items (
           name
@@ -38,16 +39,28 @@ export async function fetchOrders(): Promise<Order[]> {
   return data.map((row: any) => {
     const timeObj = new Date(row.created_at);
     const timeStr = `${String(timeObj.getHours()).padStart(2, "0")}:${String(timeObj.getMinutes()).padStart(2, "0")}`;
-    const itemsSummary = (row.order_items || [])
-      .map((it: any) => `${it.quantity}x ${it.menu_items?.name || "Produk"}`)
+    const orderItems: { name: string; quantity: number; unitPrice: number; notes?: string }[] = (row.order_items || []).map((it: any) => ({
+      name: it.menu_items?.name || "Produk",
+      quantity: it.quantity,
+      unitPrice: Number(it.unit_price) || 0,
+      notes: it.notes || undefined,
+    }));
+    const itemsSummary = orderItems
+      .map((it: any) => `${it.quantity}x ${it.name}`)
       .join(", ");
 
     return {
       id: row.id,
       orderNumber: `TN-${row.id.slice(0, 4).toUpperCase()}`,
+      orderType: row.order_type,
       customerName: row.order_type === "dine_in" ? "Dine In" : "Takeaway",
       items: itemsSummary || "Tanpa Item",
+      itemList: orderItems,
       total: Number(row.total),
+      subtotal: Number(row.subtotal) || 0,
+      discountAmount: Number(row.discount_amount) || 0,
+      tax: Number(row.tax) || 0,
+      paymentMethod: row.payment_method || "",
       time: timeStr,
       status: mapStatus(row.status),
       createdAt: row.created_at,
@@ -151,6 +164,31 @@ export async function insertOrder(order: {
   });
 
   if (error) console.error("Error inserting order:", error);
+}
+
+export async function settleOrder(
+  orderId: string,
+  payment: {
+    paymentMethod: "cash" | "qris";
+    amountPaid: number;
+    changeGiven: number;
+  }
+): Promise<void> {
+  const { error } = await supabase
+    .from("orders")
+    .update({
+      payment_method: payment.paymentMethod,
+      amount_paid: payment.amountPaid,
+      change_given: payment.changeGiven,
+      paid_at: new Date().toISOString(),
+      status: "paid",
+    })
+    .eq("id", orderId);
+
+  if (error) {
+    console.error("Error settling order:", error);
+    throw new Error(error.message || "Failed to settle order");
+  }
 }
 
 export async function updateOrderStatus(

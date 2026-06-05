@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { usePOS, OrderStatus } from "../context/POSContext";
+import { usePOS, Order, OrderStatus } from "../context/POSContext";
 import { useOrderGrouping, GroupBy } from "../../lib/hooks/useOrderGrouping";
 import { usePagination } from "../../lib/hooks/usePagination";
 import OrderCard from "./OrderCard";
 import Pagination from "./Pagination";
+import PaymentModal from "./PaymentModal";
 import { PlusIcon, getGroupIcon } from "./icons";
 
 const FILTERS = [
@@ -156,11 +157,13 @@ function GroupSection({
   badgeColor,
   icon: Icon,
   orders,
+  onCardClick,
 }: {
   title: string;
   badgeColor: string;
   icon?: React.ComponentType<{ className?: string }>;
-  orders: { id: string }[];
+  orders: Order[];
+  onCardClick?: (order: Order) => void;
 }) {
   return (
     <div className="space-y-3">
@@ -177,8 +180,8 @@ function GroupSection({
         <div className="flex-1 h-px bg-outline-variant/40 ml-2" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {orders.map((order: any) => (
-          <OrderCard key={order.id} order={order} />
+        {orders.map((order) => (
+          <OrderCard key={order.id} order={order} onCardClick={onCardClick} />
         ))}
       </div>
     </div>
@@ -187,13 +190,15 @@ function GroupSection({
 
 function FlatOrderGrid({
   paginatedOrders,
+  onCardClick,
 }: {
-  paginatedOrders: { id: string }[];
+  paginatedOrders: Order[];
+  onCardClick?: (order: Order) => void;
 }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 animate-fade-in">
-      {paginatedOrders.map((order: any) => (
-        <OrderCard key={order.id} order={order} />
+      {paginatedOrders.map((order) => (
+        <OrderCard key={order.id} order={order} onCardClick={onCardClick} />
       ))}
     </div>
   );
@@ -212,10 +217,11 @@ function FabButton({ onClick }: { onClick: () => void }) {
 }
 
 export default function PesananScreen() {
-  const { orders, ordersLoading } = usePOS();
+  const { orders, ordersLoading, settleOrder } = usePOS();
   const router = useRouter();
   const [filter, setFilter] = useState<"semua" | OrderStatus>("semua");
   const [groupBy, setGroupBy] = useState<GroupBy>("date");
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const itemsPerPage = 6;
 
   const filtered =
@@ -245,7 +251,10 @@ export default function PesananScreen() {
           <EmptyState />
         ) : groupBy === "none" ? (
           <div>
-            <FlatOrderGrid paginatedOrders={paginatedItems} />
+            <FlatOrderGrid
+              paginatedOrders={paginatedItems}
+              onCardClick={setSelectedOrder}
+            />
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -264,6 +273,7 @@ export default function PesananScreen() {
                     badgeColor={group.badgeColor}
                     icon={Icon}
                     orders={group.orders}
+                    onCardClick={setSelectedOrder}
                   />
                 );
               })}
@@ -278,6 +288,18 @@ export default function PesananScreen() {
       </div>
 
       <FabButton onClick={() => router.push("/pesanan/baru")} />
+
+      {/* Payment modal */}
+      {selectedOrder && (
+        <PaymentModal
+          order={selectedOrder}
+          onConfirm={(payment) => {
+            settleOrder(selectedOrder.id, payment);
+            setSelectedOrder(null);
+          }}
+          onClose={() => setSelectedOrder(null)}
+        />
+      )}
     </div>
   );
 }

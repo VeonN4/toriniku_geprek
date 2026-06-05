@@ -240,7 +240,21 @@ export default function AnalitikPage() {
     totalRevenue: number;
     avgDaily: number;
     peakDay: { date: string; total: number };
-  }>({ totalRevenue: 0, avgDaily: 0, peakDay: { date: "-", total: 0 } });
+    orderCount: number;
+    avgOrderValue: number;
+    dineInCount: number;
+    takeawayCount: number;
+    revenueChange: number;
+  }>({
+    totalRevenue: 0,
+    avgDaily: 0,
+    peakDay: { date: "-", total: 0 },
+    orderCount: 0,
+    avgOrderValue: 0,
+    dineInCount: 0,
+    takeawayCount: 0,
+    revenueChange: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [topN, setTopN] = useState(10);
 
@@ -251,7 +265,16 @@ export default function AnalitikPage() {
       .then((data) => {
         setDailyRevenue(data.dailyRevenue ?? []);
         setMenuStats(data.menuStats ?? []);
-        setSummary(data.summary ?? { totalRevenue: 0, avgDaily: 0, peakDay: { date: "-", total: 0 } });
+        setSummary(data.summary ?? {
+          totalRevenue: 0,
+          avgDaily: 0,
+          peakDay: { date: "-", total: 0 },
+          orderCount: 0,
+          avgOrderValue: 0,
+          dineInCount: 0,
+          takeawayCount: 0,
+          revenueChange: 0,
+        });
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -300,7 +323,7 @@ export default function AnalitikPage() {
 
       <div className="flex-1 px-4 md:px-8 pt-5 pb-24 md:pb-8 space-y-5">
         {/* ── Summary cards ── */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             {
               label: "Total Pendapatan",
@@ -309,17 +332,21 @@ export default function AnalitikPage() {
               color: "text-primary",
             },
             {
-              label: "Rata-rata/Hari",
-              value: loading ? "—" : formatRupiahShort(avgDaily),
-              sub: "rata-rata harian",
+              label: "Pesanan Selesai",
+              value: loading ? "—" : String(summary.orderCount ?? 0),
+              sub: "total transaksi",
+              color: "text-on-surface",
+            },
+            {
+              label: "Rata-rata/Transaksi",
+              value: loading ? "—" : formatRupiahShort(summary.avgOrderValue ?? 0),
+              sub: "rata-rata per pesanan",
               color: "text-tertiary",
             },
             {
-              label: "Hari Terbaik",
-              value: loading ? "—" : formatRupiah(peakDay.total),
-              sub: peakDay.date !== "-"
-                ? peakDay.date.split("-").reverse().slice(0, 2).join("/")
-                : "—",
+              label: "Rata-rata/Hari",
+              value: loading ? "—" : formatRupiahShort(avgDaily),
+              sub: "rata-rata harian",
               color: "text-amber-500",
             },
           ].map((c, i) => (
@@ -331,7 +358,7 @@ export default function AnalitikPage() {
                 {c.label}
               </p>
               {loading ? (
-                <div className="h-6 w-16 bg-gray-200 rounded-lg animate-pulse mt-2 mb-1" />
+                <div className="h-6 w-16 bg-surface-container rounded-lg animate-pulse mt-2 mb-1" />
               ) : (
                 <p className={`text-base md:text-lg font-bold mt-1 ${c.color} leading-tight`}>
                   {c.value}
@@ -346,9 +373,35 @@ export default function AnalitikPage() {
         <div className="bg-surface-container-lowest rounded-2xl p-4 md:p-5 shadow-ambient border border-surface-container-high">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-bold text-on-surface">
-                Riwayat Pendapatan
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-on-surface">
+                  Riwayat Pendapatan
+                </h2>
+                {!loading && summary.revenueChange !== 0 && (
+                  <span
+                    className={`text-xxs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 ${
+                      summary.revenueChange >= 0
+                        ? "bg-tertiary-container/40 text-tertiary"
+                        : "bg-error-container/40 text-error"
+                    }`}
+                  >
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d={summary.revenueChange >= 0 ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"}
+                      />
+                    </svg>
+                    {Math.abs(summary.revenueChange).toFixed(0)}%
+                  </span>
+                )}
+              </div>
               <p className="text-xxs text-on-surface-variant mt-0.5">
                 Pendapatan harian dari pesanan selesai
               </p>
@@ -376,7 +429,7 @@ export default function AnalitikPage() {
           </div>
 
           {loading ? (
-            <div className="h-44 bg-gray-100 rounded-xl animate-pulse" />
+            <div className="h-44 bg-surface-container rounded-xl animate-pulse" />
           ) : dailyRevenue.every((d) => d.total === 0) ? (
             <div className="h-44 flex items-center justify-center text-sm text-on-surface-variant">
               Belum ada transaksi selesai dalam periode ini.
@@ -420,10 +473,10 @@ export default function AnalitikPage() {
             <div className="space-y-3">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="flex items-center gap-3 animate-pulse">
-                  <div className="w-5 h-3 bg-gray-200 rounded" />
-                  <div className="w-28 h-3 bg-gray-200 rounded" />
-                  <div className="flex-1 h-7 bg-gray-100 rounded-lg" />
-                  <div className="w-10 h-3 bg-gray-200 rounded" />
+                  <div className="w-5 h-3 bg-surface-container rounded" />
+                  <div className="w-28 h-3 bg-surface-container rounded" />
+                  <div className="flex-1 h-7 bg-surface-container rounded-lg" />
+                  <div className="w-10 h-3 bg-surface-container rounded" />
                 </div>
               ))}
             </div>
@@ -435,6 +488,78 @@ export default function AnalitikPage() {
             <BarChart data={topMenus} />
           )}
         </div>
+
+        {/* ── Order Type & Peak Day ── */}
+        {!loading && summary.orderCount > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Order type breakdown */}
+            <div className="bg-surface-container-lowest rounded-2xl p-4 md:p-5 shadow-ambient border border-surface-container-high">
+              <h3 className="text-sm font-bold text-on-surface mb-3">
+                Tipe Pesanan
+              </h3>
+              <div className="flex gap-4 items-center">
+                <div className="flex-1 space-y-2.5">
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="font-semibold text-on-surface">Dine In</span>
+                      <span className="font-bold text-primary">{summary.dineInCount}</span>
+                    </div>
+                    <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all"
+                        style={{ width: `${(summary.dineInCount / summary.orderCount) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="font-semibold text-on-surface">Bungkus</span>
+                      <span className="font-bold text-amber-500">{summary.takeawayCount}</span>
+                    </div>
+                    <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-amber-400 rounded-full transition-all"
+                        style={{ width: `${(summary.takeawayCount / summary.orderCount) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col items-center justify-center w-20 h-20 rounded-full bg-surface-container">
+                  <span className="text-lg font-bold text-on-surface">{summary.orderCount}</span>
+                  <span className="text-xxs text-outline">total</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Peak day card */}
+            <div className="bg-surface-container-lowest rounded-2xl p-4 md:p-5 shadow-ambient border border-surface-container-high flex items-center gap-4">
+              <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-6 h-6 text-amber-500"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xxs text-on-surface-variant font-medium uppercase tracking-wide">
+                  Hari Terbaik
+                </p>
+                <p className="text-lg font-bold text-on-surface mt-0.5">
+                  {formatRupiah(summary.peakDay?.total ?? 0)}
+                </p>
+                <p className="text-xxs text-outline mt-0.5">
+                  {summary.peakDay?.date !== "-"
+                    ? summary.peakDay.date.split("-").reverse().slice(0, 2).join("/")
+                    : "—"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

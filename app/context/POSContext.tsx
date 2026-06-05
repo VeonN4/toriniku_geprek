@@ -77,6 +77,7 @@ interface POSContextType {
       selectedModifiers?: Modifier[];
     }[]
   ) => Promise<void>;
+  settleOrder: (orderId: string, payment: { paymentMethod: "cash" | "qris"; amountPaid: number; changeGiven: number }) => Promise<void>;
 }
 
 const POSContext = createContext<POSContextType | undefined>(undefined);
@@ -249,6 +250,24 @@ export function POSProvider({ children }: { children: ReactNode }) {
     await fetchOrders();
   };
 
+  const settleOrder = async (
+    orderId: string,
+    payment: { paymentMethod: "cash" | "qris"; amountPaid: number; changeGiven: number }
+  ) => {
+    await ordersApi.settleOrder(orderId, payment);
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              status: "Selesai",
+              paymentMethod: payment.paymentMethod,
+            }
+          : o
+      )
+    );
+  };
+
   return (
     <POSContext.Provider
       value={{
@@ -277,6 +296,7 @@ export function POSProvider({ children }: { children: ReactNode }) {
         updateModifier,
         deleteModifier,
         addCompleteOrder,
+        settleOrder,
       }}
     >
       {children}

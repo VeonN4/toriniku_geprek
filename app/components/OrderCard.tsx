@@ -12,68 +12,107 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
   Dibatalkan: "bg-error-container text-on-error-container font-semibold",
 };
 
-const statusOptions: OrderStatus[] = [
+const STATUS_OPTIONS: OrderStatus[] = [
   "Baru",
   "Diproses",
   "Selesai",
   "Dibatalkan",
 ];
 
-export default function OrderCard({ order }: { order: Order }) {
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Baru saja";
+  if (mins < 60) return `${mins} mnt lalu`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} jam lalu`;
+  return `${Math.floor(hrs / 24)} hr lalu`;
+}
+
+function totalQuantity(order: Order) {
+  return order.itemList.reduce((sum, item) => sum + item.quantity, 0);
+}
+
+function hasNotes(order: Order) {
+  return order.itemList.some((item) => item.notes);
+}
+
+export default function OrderCard({
+  order,
+  onCardClick,
+}: {
+  order: Order;
+  onCardClick?: (order: Order) => void;
+}) {
   const { updateOrderStatus } = usePOS();
-  const [showMenu, setShowMenu] = useState(false);
+  const qty = totalQuantity(order);
+  const isUnpaid = order.status === "Baru" || order.status === "Diproses";
 
   return (
     <div
       id={`order-card-${order.id}`}
-      className="bg-surface-container-lowest rounded-2xl p-4 shadow-ambient hover:shadow-md relative transition-all"
+      className={`bg-surface-container-lowest rounded-2xl p-4 shadow-ambient relative transition-all group ${
+        isUnpaid && onCardClick
+          ? "hover:shadow-md cursor-pointer"
+          : "hover:shadow-md"
+      }`}
+      onClick={() => isUnpaid && onCardClick?.(order)}
     >
-      <div className="flex items-start justify-between mb-2">
-        <div>
+      {/* Row 1: Order number + status badge */}
+      <div className="flex items-start justify-between mb-1.5">
+        <div className="flex items-center gap-2 min-w-0">
           <span className="font-bold text-on-surface text-base">
             #{order.orderNumber}
           </span>
-          <p className="text-xs text-outline mt-0.5">{order.customerName}</p>
         </div>
         <button
           id={`btn-status-${order.id}`}
-          onClick={() => setShowMenu((v) => !v)}
           className={`text-xs font-semibold px-3 py-1 rounded-full cursor-pointer flex-shrink-0 transition-colors ${STATUS_COLORS[order.status]}`}
         >
           {order.status}
         </button>
       </div>
 
-      {showMenu && (
-        <div
-          className="absolute right-4 top-12 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant z-50 py-1 min-w-36 transition-all"
-          onMouseLeave={() => setShowMenu(false)}
-        >
-          {statusOptions.map((s) => (
-            <button
-              key={s}
-              id={`status-option-${order.id}-${s}`}
-              onClick={() => {
-                updateOrderStatus(order.id, s);
-                setShowMenu(false);
-              }}
-              className={`w-full text-left px-4 py-2 text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors ${order.status === s ? "text-primary" : "text-on-surface-variant"}`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <p className="text-sm text-on-surface-variant mb-3">{order.items}</p>
-      {order.notes && (
-        <p className="text-xs text-outline italic mb-2">{order.notes}</p>
-      )}
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-outline">Jam: {order.time}</span>
-        <span className="text-sm font-bold text-primary">
-          {formatRupiah(order.total)}
+      {/* Row 2: Customer, order type, item count */}
+      <div className="flex items-center gap-1.5 text-xs text-outline mb-2">
+        <span>{order.customerName}</span>
+        <span className="text-outline-variant">·</span>
+        <span className="font-semibold text-on-surface-variant">
+          {qty} item
         </span>
+      </div>
+
+      {/* Row 3: Items summary */}
+      <div className="relative mb-2.5">
+        <p className="text-sm text-on-surface-variant leading-relaxed line-clamp-2">
+          {order.items}
+        </p>
+        {hasNotes(order) && (
+          <span className="text-xxs text-outline italic block mt-0.5">
+            Ada catatan
+          </span>
+        )}
+      </div>
+
+      {/* Row 4: Time, age, total */}
+      <div className="flex items-center justify-between pt-2 border-t border-outline-variant/40">
+        <div className="flex items-center gap-1.5 text-xs text-outline">
+          <span>{order.time}</span>
+          <span className="text-outline-variant">·</span>
+          <span className="text-on-surface-variant font-medium">
+            {timeAgo(order.createdAt)}
+          </span>
+        </div>
+        <div className="text-right">
+          <span className="text-sm font-bold text-primary">
+            {formatRupiah(order.total)}
+          </span>
+          {order.discountAmount > 0 && (
+            <span className="text-xxs text-error block -mt-0.5">
+              -{formatRupiah(order.discountAmount)}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
