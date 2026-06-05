@@ -62,6 +62,7 @@ export default function PesananBaruPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isForLater, setIsForLater] = useState(false);
 
   const formatRupiah = (n: number) => "Rp " + n.toLocaleString("id-ID");
 
@@ -189,13 +190,9 @@ export default function PesananBaruPage() {
     }
   }, [subtotal, selectedDiscount]);
 
-  const tax = useMemo(() => {
-    return Math.round((subtotal - discountAmount) * 0.1); // 10% PB1 tax
-  }, [subtotal, discountAmount]);
-
   const total = useMemo(() => {
-    return Math.max(0, subtotal - discountAmount + tax);
-  }, [subtotal, discountAmount, tax]);
+    return Math.max(0, subtotal - discountAmount);
+  }, [subtotal, discountAmount]);
 
   const changeGiven = useMemo(() => {
     const paid = parseFloat(amountPaid.replace(/\D/g, ""));
@@ -210,10 +207,14 @@ export default function PesananBaruPage() {
       return;
     }
 
-    const paidVal = parseFloat(amountPaid.replace(/\D/g, ""));
-    if (isNaN(paidVal) || paidVal < total) {
-      setError("Uang yang dibayarkan kurang");
-      return;
+    // Only validate payment if not a "for later" order
+    let paidVal = 0;
+    if (!isForLater) {
+      paidVal = parseFloat(amountPaid.replace(/\D/g, ""));
+      if (isNaN(paidVal) || paidVal < total) {
+        setError("Uang yang dibayarkan kurang");
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -225,11 +226,12 @@ export default function PesananBaruPage() {
         orderType,
         subtotal,
         discountAmount,
-        tax,
+        tax: 0,
         total,
         paymentMethod,
-        amountPaid: paidVal,
-        changeGiven: changeGiven,
+        amountPaid: isForLater ? undefined : paidVal,
+        changeGiven: isForLater ? undefined : changeGiven,
+        isForLater,
       };
 
       const itemsPayload = cart.map((entry) => ({
@@ -607,12 +609,7 @@ export default function PesananBaruPage() {
                   <span>-{formatRupiah(discountAmount)}</span>
                 </div>
               )}
-              <div className="flex justify-between">
-                <span>Pajak PB1 (10%)</span>
-                <span className="font-semibold text-on-surface">
-                  {formatRupiah(tax)}
-                </span>
-              </div>
+
               <div className="flex justify-between text-base font-bold text-on-surface pt-1.5">
                 <span>Total Akhir</span>
                 <span className="text-primary text-base font-bold">
@@ -620,81 +617,105 @@ export default function PesananBaruPage() {
                 </span>
               </div>
             </div>
-            {/* Payment method */}
-            <div>
-              <label className="block text-xxs font-bold text-secondary uppercase tracking-wider mb-1.5">
-                Metode Pembayaran
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPaymentMethod("cash");
-                    setAmountPaid("");
-                    setError("");
-                  }}
-                  className={`flex-1 py-2.5 border rounded-lg text-xs font-bold transition-all cursor-pointer ${paymentMethod === "cash" ? "border-primary bg-primary/5 text-primary" : "border-outline-variant text-secondary"}`}
-                >
-                  💵 Tunai
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPaymentMethod("qris");
-                    setAmountPaid("");
-                    setError("");
-                  }}
-                  className={`flex-1 py-2.5 border rounded-lg text-xs font-bold transition-all cursor-pointer ${paymentMethod === "qris" ? "border-primary bg-primary/5 text-primary" : "border-outline-variant text-secondary"}`}
-                >
-                  📱 QRIS
-                </button>
+            {/* Order For Later Toggle - Mobile */}
+            <div className="flex items-center justify-between p-3 rounded-lg border border-surface-container-high bg-surface-container-low">
+              <div>
+                <p className="text-xs font-bold text-on-surface">⏳ Pesanan untuk nanti?</p>
+                <p className="text-xxs text-secondary mt-0.5">Tandai sebagai <span className="font-semibold text-amber-600">Diproses</span>, bayar belakangan</p>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsForLater((v) => !v)}
+                className={`relative w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer flex-shrink-0 ${
+                  isForLater ? "bg-amber-500" : "bg-surface-container-highest"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+                    isForLater ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
             </div>
-            {/* Quick cash + amount input */}
-            <div className="space-y-2 bg-surface-container-low p-3 rounded-lg border border-surface-container-high">
-              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-                <button
-                  type="button"
-                  onClick={() => handleQuickCash(total)}
-                  className="bg-surface-container-lowest px-2.5 py-1 border border-outline rounded text-xxs font-bold text-secondary hover:bg-surface-container cursor-pointer whitespace-nowrap transition-colors"
-                >
-                  Uang Pas
-                </button>
-                {[20000, 50000, 100000].map((amt) => (
+            {/* Payment method */}
+            {!isForLater && (
+              <div>
+                <label className="block text-xxs font-bold text-secondary uppercase tracking-wider mb-1.5">
+                  Metode Pembayaran
+                </label>
+                <div className="flex gap-2">
                   <button
-                    key={amt}
                     type="button"
-                    onClick={() => handleQuickCash(amt)}
+                    onClick={() => {
+                      setPaymentMethod("cash");
+                      setAmountPaid("");
+                      setError("");
+                    }}
+                    className={`flex-1 py-2.5 border rounded-lg text-xs font-bold transition-all cursor-pointer ${paymentMethod === "cash" ? "border-primary bg-primary/5 text-primary" : "border-outline-variant text-secondary"}`}
+                  >
+                    💵 Tunai
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentMethod("qris");
+                      setAmountPaid("");
+                      setError("");
+                    }}
+                    className={`flex-1 py-2.5 border rounded-lg text-xs font-bold transition-all cursor-pointer ${paymentMethod === "qris" ? "border-primary bg-primary/5 text-primary" : "border-outline-variant text-secondary"}`}
+                  >
+                    📱 QRIS
+                  </button>
+                </div>
+              </div>
+            )}
+            {/* Quick cash + amount input */}
+            {!isForLater && (
+              <div className="space-y-2 bg-surface-container-low p-3 rounded-lg border border-surface-container-high">
+                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickCash(total)}
                     className="bg-surface-container-lowest px-2.5 py-1 border border-outline rounded text-xxs font-bold text-secondary hover:bg-surface-container cursor-pointer whitespace-nowrap transition-colors"
                   >
-                    {amt.toLocaleString("id-ID")}
+                    Uang Pas
                   </button>
-                ))}
-              </div>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-secondary font-bold">
-                  Bayar Rp
-                </span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={amountPaid}
-                  onChange={(e) => {
-                    const d = e.target.value.replace(/\D/g, "");
-                    setAmountPaid(d ? parseInt(d).toLocaleString("id-ID") : "");
-                    setError("");
-                  }}
-                  placeholder="Masukkan nominal"
-                  className="w-full pl-18 pr-4 py-2.5 border border-outline rounded-lg text-xs font-bold text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
-                />
-              </div>
-              {changeGiven > 0 && (
-                <div className="flex justify-between text-tertiary font-bold text-xs pt-1 border-t border-dashed border-outline">
-                  <span>Kembalian</span>
-                  <span>{formatRupiah(changeGiven)}</span>
+                  {[20000, 50000, 100000].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => handleQuickCash(amt)}
+                      className="bg-surface-container-lowest px-2.5 py-1 border border-outline rounded text-xxs font-bold text-secondary hover:bg-surface-container cursor-pointer whitespace-nowrap transition-colors"
+                    >
+                      {amt.toLocaleString("id-ID")}
+                    </button>
+                  ))}
                 </div>
-              )}
-            </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-secondary font-bold">
+                    Bayar Rp
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={amountPaid}
+                    onChange={(e) => {
+                      const d = e.target.value.replace(/\D/g, "");
+                      setAmountPaid(d ? parseInt(d).toLocaleString("id-ID") : "");
+                      setError("");
+                    }}
+                    placeholder="Masukkan nominal"
+                    className="w-full pl-18 pr-4 py-2.5 border border-outline rounded-lg text-xs font-bold text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
+                  />
+                </div>
+                {changeGiven > 0 && (
+                  <div className="flex justify-between text-tertiary font-bold text-xs pt-1 border-t border-dashed border-outline">
+                    <span>Kembalian</span>
+                    <span>{formatRupiah(changeGiven)}</span>
+                  </div>
+                )}
+              </div>
+            )}
             {error && (
               <p className="text-error text-xs font-semibold text-center">
                 {error}
@@ -709,14 +730,18 @@ export default function PesananBaruPage() {
               className={`w-full py-4 rounded-lg text-white font-bold text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 mb-2 ${
                 success
                   ? "bg-tertiary shadow-lg"
+                  : isForLater
+                  ? "bg-amber-500 hover:bg-amber-600 disabled:bg-surface-container-highest disabled:text-secondary shadow-active"
                   : "bg-primary hover:bg-primary-dark disabled:bg-surface-container-highest disabled:text-secondary shadow-active"
               }`}
             >
               {isSubmitting
                 ? "Memproses..."
                 : success
-                  ? "✓ Transaksi Berhasil!"
-                  : "Bayar & Selesaikan"}
+                ? "✓ Pesanan Tersimpan!"
+                : isForLater
+                ? "⏳ Simpan (Diproses)"
+                : "Bayar & Selesaikan"}
             </button>
             <div className="h-2" />
           </div>
@@ -909,12 +934,7 @@ export default function PesananBaruPage() {
                 <span>-{formatRupiah(discountAmount)}</span>
               </div>
             )}
-            <div className="flex justify-between">
-              <span>Pajak Restoran PB1 (10%)</span>
-              <span className="font-semibold text-on-surface">
-                {formatRupiah(tax)}
-              </span>
-            </div>
+
             <div className="flex justify-between text-sm font-bold text-on-surface pt-1.5">
               <span>Total Akhir</span>
               <span className="text-primary text-base font-bold">
@@ -923,94 +943,119 @@ export default function PesananBaruPage() {
             </div>
           </div>
 
-          {/* Payment selector */}
-          <div>
-            <label className="block text-xxs font-bold text-secondary uppercase tracking-wider mb-1.5">
-              Metode Pembayaran
-            </label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setPaymentMethod("cash");
-                  setAmountPaid("");
-                  setError("");
-                }}
-                className={`flex-1 py-2 border rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  paymentMethod === "cash"
-                    ? "border-primary bg-primary/5 text-primary border-2"
-                    : "border-outline-variant text-secondary hover:bg-surface-container-low"
-                }`}
-              >
-                💵 Tunai (Cash)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setPaymentMethod("qris");
-                  setAmountPaid("");
-                  setError("");
-                }}
-                className={`flex-1 py-2 border rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  paymentMethod === "qris"
-                    ? "border-primary bg-primary/5 text-primary border-2"
-                    : "border-outline-variant text-secondary hover:bg-surface-container-low"
-                }`}
-              >
-                📱 QRIS
-              </button>
+          {/* Order For Later Toggle - Desktop */}
+          <div className="flex items-center justify-between p-3 rounded-lg border border-surface-container-high bg-surface-container-low">
+            <div>
+              <p className="text-xs font-bold text-on-surface">⏳ Pesanan untuk nanti?</p>
+              <p className="text-xxs text-secondary mt-0.5">Tandai sebagai <span className="font-semibold text-amber-600">Diproses</span>, bayar belakangan</p>
             </div>
+            <button
+              type="button"
+              onClick={() => setIsForLater((v) => !v)}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer flex-shrink-0 ${
+                isForLater ? "bg-amber-500" : "bg-surface-container-highest"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+                  isForLater ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
           </div>
+
+          {/* Payment selector */}
+          {!isForLater && (
+            <div>
+              <label className="block text-xxs font-bold text-secondary uppercase tracking-wider mb-1.5">
+                Metode Pembayaran
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentMethod("cash");
+                    setAmountPaid("");
+                    setError("");
+                  }}
+                  className={`flex-1 py-2 border rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    paymentMethod === "cash"
+                      ? "border-primary bg-primary/5 text-primary border-2"
+                      : "border-outline-variant text-secondary hover:bg-surface-container-low"
+                  }`}
+                >
+                  💵 Tunai (Cash)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentMethod("qris");
+                    setAmountPaid("");
+                    setError("");
+                  }}
+                  className={`flex-1 py-2 border rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    paymentMethod === "qris"
+                      ? "border-primary bg-primary/5 text-primary border-2"
+                      : "border-outline-variant text-secondary hover:bg-surface-container-low"
+                  }`}
+                >
+                  📱 QRIS
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Payment inputs */}
-          <div className="space-y-2 bg-surface-container-low p-3 rounded-lg border border-surface-container-high">
-            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-              <button
-                type="button"
-                onClick={() => handleQuickCash(total)}
-                className="bg-surface-container-lowest px-2.5 py-1 border border-outline rounded text-xxs font-bold text-secondary hover:bg-surface-container cursor-pointer whitespace-nowrap transition-colors"
-              >
-                Uang Pas
-              </button>
-              {[20000, 50000, 100000].map((amt) => (
+          {!isForLater && (
+            <div className="space-y-2 bg-surface-container-low p-3 rounded-lg border border-surface-container-high">
+              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
                 <button
-                  key={amt}
                   type="button"
-                  onClick={() => handleQuickCash(amt)}
+                  onClick={() => handleQuickCash(total)}
                   className="bg-surface-container-lowest px-2.5 py-1 border border-outline rounded text-xxs font-bold text-secondary hover:bg-surface-container cursor-pointer whitespace-nowrap transition-colors"
                 >
-                  {amt.toLocaleString("id-ID")}
+                  Uang Pas
                 </button>
-              ))}
-            </div>
-
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-secondary font-bold">
-                Bayar Rp
-              </span>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={amountPaid}
-                onChange={(e) => {
-                  const digits = e.target.value.replace(/\D/g, "");
-                  setAmountPaid(
-                    digits ? parseInt(digits).toLocaleString("id-ID") : "",
-                  );
-                  setError("");
-                }}
-                placeholder="Masukkan nominal"
-                className="w-full pl-18 pr-4 py-2 border border-outline rounded-lg text-xs font-bold text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
-              />
-            </div>
-
-            {changeGiven > 0 && (
-              <div className="flex justify-between text-tertiary font-bold text-xs pt-1 border-t border-dashed border-outline">
-                <span>Kembalian Kasir</span>
-                <span>{formatRupiah(changeGiven)}</span>
+                {[20000, 50000, 100000].map((amt) => (
+                  <button
+                    key={amt}
+                    type="button"
+                    onClick={() => handleQuickCash(amt)}
+                    className="bg-surface-container-lowest px-2.5 py-1 border border-outline rounded text-xxs font-bold text-secondary hover:bg-surface-container cursor-pointer whitespace-nowrap transition-colors"
+                  >
+                    {amt.toLocaleString("id-ID")}
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
+
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-secondary font-bold">
+                  Bayar Rp
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={amountPaid}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "");
+                    setAmountPaid(
+                      digits ? parseInt(digits).toLocaleString("id-ID") : "",
+                    );
+                    setError("");
+                  }}
+                  placeholder="Masukkan nominal"
+                  className="w-full pl-18 pr-4 py-2 border border-outline rounded-lg text-xs font-bold text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
+                />
+              </div>
+
+              {changeGiven > 0 && (
+                <div className="flex justify-between text-tertiary font-bold text-xs pt-1 border-t border-dashed border-outline">
+                  <span>Kembalian Kasir</span>
+                  <span>{formatRupiah(changeGiven)}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {error && (
             <p className="text-error text-xs font-semibold text-center">
@@ -1025,6 +1070,8 @@ export default function PesananBaruPage() {
             className={`w-full py-3.5 rounded-lg text-white font-bold text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${
               success
                 ? "bg-tertiary shadow-lg"
+                : isForLater
+                ? "bg-amber-500 hover:bg-amber-600 disabled:bg-surface-container-highest disabled:text-secondary"
                 : "bg-primary hover:bg-primary-dark disabled:bg-surface-container-highest disabled:text-secondary"
             }`}
           >
@@ -1052,7 +1099,9 @@ export default function PesananBaruPage() {
                 Memproses Order...
               </>
             ) : success ? (
-              "✓ Transaksi Berhasil!"
+              "✓ Pesanan Tersimpan!"
+            ) : isForLater ? (
+              "⏳ Simpan (Diproses)"
             ) : (
               "Bayar & Cetak Pesanan"
             )}

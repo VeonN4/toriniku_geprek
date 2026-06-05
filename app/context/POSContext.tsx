@@ -99,6 +99,7 @@ interface POSContextType {
       paymentMethod: "cash" | "qris";
       amountPaid?: number;
       changeGiven?: number;
+      isForLater?: boolean;
     },
     items: {
       menuItemId: string;
@@ -193,7 +194,7 @@ export function POSProvider({ children }: { children: ReactNode }) {
               notes: undefined,
               total: Number(row.total),
               time: timeStr,
-              status: row.status === "open" ? "Baru" : row.status === "paid" ? "Selesai" : "Dibatalkan",
+              status: row.status === "open" ? "Baru" : row.status === "paid" ? "Selesai" : row.status === "cancelled" ? "Dibatalkan" : "Dibatalkan",
               createdAt: row.created_at,
             };
           })
@@ -327,7 +328,7 @@ export function POSProvider({ children }: { children: ReactNode }) {
   };
 
   const updateOrderStatus = async (id: string, status: OrderStatus) => {
-    const dbStatus = status === "Baru" ? "open" : status === "Selesai" ? "paid" : "cancelled";
+    const dbStatus = status === "Baru" ? "open" : status === "Diproses" ? "open" : status === "Selesai" ? "paid" : "cancelled";
     const { error } = await supabase.from("orders").update({ status: dbStatus }).eq("id", id);
     if (!error) {
       setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
@@ -486,6 +487,7 @@ export function POSProvider({ children }: { children: ReactNode }) {
       paymentMethod: "cash" | "qris";
       amountPaid?: number;
       changeGiven?: number;
+      isForLater?: boolean;
     },
     items: {
       menuItemId: string;
@@ -495,21 +497,22 @@ export function POSProvider({ children }: { children: ReactNode }) {
       selectedModifiers?: Modifier[];
     }[]
   ) => {
+    const isForLater = order.isForLater ?? false;
     // 1. Insert order
     const { data: orderData, error: orderError } = await supabase
       .from("orders")
       .insert({
         discount_id: order.discountId || null,
         order_type: order.orderType,
-        status: "paid",
+        status: isForLater ? "open" : "paid",
         subtotal: order.subtotal,
         discount_amount: order.discountAmount,
         tax: order.tax,
         total: order.total,
         payment_method: order.paymentMethod,
-        amount_paid: order.amountPaid || order.total,
-        change_given: order.changeGiven || 0,
-        paid_at: new Date().toISOString(),
+        amount_paid: isForLater ? null : (order.amountPaid || order.total),
+        change_given: isForLater ? null : (order.changeGiven || 0),
+        paid_at: isForLater ? null : new Date().toISOString(),
       })
       .select()
       .single();

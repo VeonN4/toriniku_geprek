@@ -37,7 +37,8 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/beranda") ||
     pathname.startsWith("/pesanan") ||
     pathname.startsWith("/menu") ||
-    pathname.startsWith("/diskon");
+    pathname.startsWith("/diskon") ||
+    pathname.startsWith("/analitik");
 
   // Not authenticated → redirect to /login
   if (!user && isProtectedRoute) {
