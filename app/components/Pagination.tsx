@@ -18,6 +18,7 @@ export default function Pagination({
   return (
     <div className="flex items-center justify-center gap-2 mt-8 flex-wrap animate-fade-in">
       <button
+        type="button"
         id="btn-prev-page"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
@@ -30,6 +31,7 @@ export default function Pagination({
         const pageNum = idx + 1;
         return (
           <button
+            type="button"
             key={pageNum}
             id={`btn-page-${pageNum}`}
             onClick={() => onPageChange(pageNum)}
@@ -45,6 +47,7 @@ export default function Pagination({
       })}
 
       <button
+        type="button"
         id="btn-next-page"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}

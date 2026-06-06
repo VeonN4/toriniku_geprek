@@ -139,9 +139,33 @@ const tabs = [
         strokeWidth={active ? 2.5 : 2}
         viewBox="0 0 24 24"
       >
-        <rect x="18" y="3" width="4" height="18" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-        <rect x="10" y="8" width="4" height="13" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-        <rect x="2" y="13" width="4" height="8" rx="1" strokeLinecap="round" strokeLinejoin="round" />
+        <rect
+          x="18"
+          y="3"
+          width="4"
+          height="18"
+          rx="1"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <rect
+          x="10"
+          y="8"
+          width="4"
+          height="13"
+          rx="1"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <rect
+          x="2"
+          y="13"
+          width="4"
+          height="8"
+          rx="1"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     ),
   },
@@ -189,7 +213,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-60 bg-surface-container-lowest border-r border-outline-variant h-screen sticky top-0 flex-shrink-0 shadow-ambient">
+    <aside className="hidden md:flex flex-col w-60 bg-surface-container-lowest border-r border-outline-variant h-screen sticky top-0 shrink-0 shadow-ambient">
       {/* Brand */}
       <div className="px-6 py-6 border-b border-outline-variant">
         <div className="flex items-center gap-3">
@@ -247,7 +271,7 @@ export function Sidebar() {
 
       {/* Footer */}
       <div className="px-4 py-4 border-t border-outline-variant flex flex-col gap-2">
-        <button
+        <button type="button"
           id="btn-logout-sidebar"
           onClick={handleLogout}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-error hover:bg-error/10 cursor-pointer"

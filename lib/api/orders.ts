@@ -116,7 +116,7 @@ export async function insertCompleteOrder(
 
   const orderId = orderData.id;
 
-  for (const item of items) {
+  await Promise.all(items.map(async (item) => {
     const { data: itemData, error: itemError } = await supabase
       .from("order_items")
       .insert({
@@ -131,7 +131,7 @@ export async function insertCompleteOrder(
 
     if (itemError || !itemData) {
       console.error("Error inserting order item:", itemError);
-      continue;
+      return;
     }
 
     if (item.selectedModifiers && item.selectedModifiers.length > 0) {
@@ -149,7 +149,7 @@ export async function insertCompleteOrder(
         console.error("Error inserting order item modifiers:", modError);
       }
     }
-  }
+  }));
 }
 
 export async function insertOrder(order: {
@@ -189,6 +189,11 @@ export async function settleOrder(
     console.error("Error settling order:", error);
     throw new Error(error.message || "Failed to settle order");
   }
+}
+
+export async function deleteOrder(id: string): Promise<void> {
+  const { error } = await supabase.from("orders").delete().eq("id", id);
+  if (error) console.error("Error deleting order:", error);
 }
 
 export async function updateOrderStatus(

@@ -112,7 +112,7 @@ export default function BerandaScreen() {
         </h2>
 
         {/* Active orders card */}
-        <button
+        <button type="button"
           id="card-active-orders"
           onClick={() => router.push("/pesanan")}
           className="w-full bg-surface-container-lowest rounded-2xl p-4 flex items-center gap-4 shadow-ambient hover:shadow-md active:scale-[0.99] mb-3 text-left cursor-pointer transition-all"
@@ -167,7 +167,7 @@ export default function BerandaScreen() {
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <button
+          <button type="button"
             id="btn-tambah-pesanan"
             onClick={() => router.push("/pesanan/baru")}
             className="bg-surface-container-lowest rounded-2xl p-4 flex items-center gap-3 shadow-ambient hover:shadow-md active:scale-[0.98] text-left cursor-pointer transition-all"
@@ -198,7 +198,7 @@ export default function BerandaScreen() {
             </span>
           </button>
 
-          <button
+          <button type="button"
             id="btn-lihat-menu"
             onClick={() => router.push("/menu")}
             className="bg-surface-container-lowest rounded-2xl p-4 flex items-center gap-3 shadow-ambient hover:shadow-md active:scale-[0.98] text-left cursor-pointer transition-all"
@@ -255,7 +255,7 @@ export default function BerandaScreen() {
         <div className="bg-surface-container-lowest rounded-2xl shadow-ambient overflow-hidden">
           <div className="px-5 py-3.5 border-b border-outline-variant/40 flex items-center justify-between">
             <h3 className="text-sm font-bold text-on-surface">Pesanan Terbaru</h3>
-            <button
+            <button type="button"
               onClick={() => router.push("/pesanan")}
               className="text-xs font-semibold text-primary hover:underline cursor-pointer"
             >
@@ -275,7 +275,7 @@ export default function BerandaScreen() {
           ) : (
             <div className="divide-y divide-outline-variant/30">
               {recentOrders.map((order) => (
-                <button
+                <button type="button"
                   key={order.id}
                   onClick={() => router.push("/pesanan")}
                   className="w-full flex items-center gap-3 px-5 py-3 hover:bg-surface-container/50 active:bg-surface-container text-left cursor-pointer transition-colors"
@@ -304,8 +304,9 @@ export default function BerandaScreen() {
       </div>
 
       {/* FAB — mobile only */}
-      <button
+      <button type="button"
         id="fab-pesanan-baru"
+        aria-label="Pesanan baru"
         onClick={() => router.push("/pesanan/baru")}
         className="md:hidden fixed bottom-20 right-5 z-40 w-14 h-14 bg-primary text-on-primary rounded-full shadow-active flex items-center justify-center hover:bg-primary-dark active:scale-95 cursor-pointer transition-all"
       >

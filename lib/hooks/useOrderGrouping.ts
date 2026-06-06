@@ -66,13 +66,17 @@ function groupByStatus(ordersList: Order[]): GroupedOrders[] {
     "Dibatalkan",
   ];
 
-  return statuses
-    .map((s) => ({
-      title: s,
-      badgeColor: STATUS_COLORS[s],
-      orders: ordersList.filter((o) => o.status === s),
-    }))
-    .filter((g) => g.orders.length > 0);
+  return statuses.reduce<GroupedOrders[]>((acc, s) => {
+    const filtered = ordersList.filter((o) => o.status === s);
+    if (filtered.length > 0) {
+      acc.push({
+        title: s,
+        badgeColor: STATUS_COLORS[s],
+        orders: filtered,
+      });
+    }
+    return acc;
+  }, []);
 }
 
 function groupByDate(ordersList: Order[]): GroupedOrders[] {

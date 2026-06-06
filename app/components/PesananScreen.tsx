@@ -34,7 +34,7 @@ function Header({ onNewOrder }: { onNewOrder: () => void }) {
             Pantau semua orderan masuk di sini
           </p>
         </div>
-        <button
+        <button type="button"
           id="btn-new-order-header"
           onClick={onNewOrder}
           className="hidden md:flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold text-sm px-4 py-2.5 rounded-xl backdrop-blur-sm active:scale-95 transition-all cursor-pointer shadow-ambient"
@@ -57,7 +57,7 @@ function FilterTabs({
   return (
     <div className="bg-surface-container-lowest px-4 md:px-8 py-2.5 flex gap-2 overflow-x-auto border-b border-outline-variant flex-shrink-0">
       {FILTERS.map((f) => (
-        <button
+        <button type="button"
           key={f.id}
           id={`filter-${f.id}`}
           onClick={() => onChange(f.id)}
@@ -206,7 +206,7 @@ function FlatOrderGrid({
 
 function FabButton({ onClick }: { onClick: () => void }) {
   return (
-    <button
+    <button type="button"
       id="fab-new-order"
       onClick={onClick}
       className="md:hidden fixed bottom-20 right-5 z-40 w-14 h-14 bg-primary text-on-primary rounded-full shadow-active flex items-center justify-center hover:bg-primary-dark active:scale-95 transition-all cursor-pointer"

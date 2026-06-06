@@ -40,11 +40,16 @@ export default function PaymentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div
-        className="bg-surface-container-lowest rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50">
+      <button type="button"
+        className="absolute inset-0 bg-black/40 cursor-default"
+        onClick={onClose}
+        aria-label="Tutup"
+      />
+      <div className="relative flex items-center justify-center h-full p-4 pointer-events-none">
+        <div
+          className="pointer-events-auto bg-surface-container-lowest rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        >
         {/* Header */}
         <div className="bg-primary px-6 py-5 rounded-t-2xl">
           <div className="flex items-center justify-between">
@@ -55,8 +60,8 @@ export default function PaymentModal({
 
         {/* Order items */}
         <div className="px-6 py-4 space-y-3 border-b border-outline-variant/40">
-          {order.itemList.map((item, i) => (
-            <div key={i} className="flex items-start justify-between text-sm">
+          {order.itemList.map((item) => (
+            <div key={`${item.name}-${item.unitPrice}`} className="flex items-start justify-between text-sm">
               <div className="flex-1 min-w-0">
                 <span className="font-medium text-on-surface">
                   {item.quantity}x {item.name}
@@ -94,11 +99,10 @@ export default function PaymentModal({
         <div className="px-6 py-4 space-y-4">
           {/* Payment method */}
           <div>
-            <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
+            <div className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
               Metode Pembayaran
-            </label>
-            <div className="flex gap-2">
-              <button
+              <div className="flex gap-2 mt-2">
+              <button type="button"
                 onClick={() => setPaymentMethod("cash")}
                 className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition-all ${
                   paymentMethod === "cash"
@@ -108,7 +112,7 @@ export default function PaymentModal({
               >
                 Tunai
               </button>
-              <button
+              <button type="button"
                 onClick={() => setPaymentMethod("qris")}
                 className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition-all ${
                   paymentMethod === "qris"
@@ -120,14 +124,16 @@ export default function PaymentModal({
               </button>
             </div>
           </div>
+          </div>
 
           {/* Amount input (cash only) */}
           {paymentMethod === "cash" && (
             <div>
-              <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
+              <label htmlFor="amount-paid" className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
                 Bayar Rp
               </label>
               <input
+                id="amount-paid"
                 type="text"
                 inputMode="numeric"
                 value={amountPaid}
@@ -138,7 +144,7 @@ export default function PaymentModal({
               {/* Quick amount buttons */}
               <div className="flex gap-2 mt-2">
                 {[order.total, 20000, 50000, 100000].map((val) => (
-                  <button
+                  <button type="button"
                     key={val}
                     onClick={() => setAmountPaid(String(val))}
                     className="px-3 py-1.5 bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-xs font-semibold rounded-lg cursor-pointer transition-colors"
@@ -172,19 +178,20 @@ export default function PaymentModal({
 
         {/* Action buttons */}
         <div className="px-6 py-4 border-t border-outline-variant/40 flex gap-3">
-          <button
+          <button type="button"
             onClick={onClose}
             className="flex-1 px-4 py-2.5 bg-surface-container text-on-surface-variant font-semibold text-sm rounded-xl hover:bg-surface-container-high cursor-pointer transition-colors"
           >
             Batal
           </button>
-          <button
+          <button type="button"
             onClick={handleConfirm}
             disabled={paymentMethod === "cash" && !isPaidEnough || isSubmitting}
             className="flex-1 px-4 py-2.5 bg-primary text-on-primary font-semibold text-sm rounded-xl hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
           >
             {isSubmitting ? "Memproses..." : "Konfirmasi Pembayaran"}
           </button>
+        </div>
         </div>
       </div>
     </div>

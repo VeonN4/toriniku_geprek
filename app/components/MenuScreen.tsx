@@ -38,19 +38,18 @@ function MenuItemCard({ item, onOpenModifiers }: { item: MenuItem; onOpenModifie
       </div>
 
       <div className="flex items-center gap-1.5 flex-shrink-0">
-        {/* Modifier button */}
-        <button
-          id={`modifier-${item.id}`}
+        {/* Edit button */}
+        <button type="button"
+          id={`edit-${item.id}`}
+          aria-label="Edit Menu"
           onClick={() => onOpenModifiers(item)}
           className="w-8 h-8 flex items-center justify-center rounded-xl text-outline hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
-          title="Kelola Modifier"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.293-6.293a1 1 0 011.414 0l1.586 1.586a1 1 0 010 1.414L12 16H9v-3z" />
           </svg>
         </button>
-        <button
+        <button type="button"
           id={`toggle-status-${item.id}`}
           onClick={() => updateMenuItemStatus(item.id, isHabis ? "Ready" : "Habis")}
           className={`text-xs font-bold px-3 py-1 rounded-full cursor-pointer transition-colors ${
@@ -61,8 +60,9 @@ function MenuItemCard({ item, onOpenModifiers }: { item: MenuItem; onOpenModifie
         >
           {item.status}
         </button>
-        <button
+        <button type="button"
           id={`delete-menu-${item.id}`}
+          aria-label="Hapus menu"
           onClick={() => deleteMenuItem(item.id)}
           className="text-outline hover:text-error active:scale-90 cursor-pointer p-1 transition-all"
         >
@@ -91,7 +91,7 @@ export default function MenuScreen() {
             <h1 className="text-white text-2xl font-bold">Kelola Menu</h1>
             <p className="text-on-primary/80 text-sm mt-0.5">Total: {activeCount} Produk aktif</p>
           </div>
-          <button
+          <button type="button"
             id="btn-tambah-menu"
             onClick={() => router.push("/menu/tambah")}
             className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold text-sm px-4 py-2.5 rounded-xl backdrop-blur-sm active:scale-95 transition-all cursor-pointer shadow-ambient"
@@ -125,7 +125,7 @@ export default function MenuScreen() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 2h1a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3zM7 13H3M12 2v20" />
             </svg>
             <p className="text-sm font-medium">Belum ada menu</p>
-            <button
+            <button type="button"
               id="btn-add-first-menu"
               onClick={() => router.push("/menu/tambah")}
               className="mt-3 bg-primary text-white text-sm font-semibold px-4 py-2.5 rounded-full hover:bg-primary-dark active:scale-95 transition-all cursor-pointer shadow-active"
@@ -140,7 +140,7 @@ export default function MenuScreen() {
         )}
       </div>
 
-      <ModifierDrawer item={selectedItem} onClose={() => setSelectedItem(null)} />
+      <ModifierDrawer key={selectedItem?.id ?? 'none'} item={selectedItem} onClose={() => setSelectedItem(null)} />
     </div>
   );
 }

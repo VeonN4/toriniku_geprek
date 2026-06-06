@@ -77,6 +77,18 @@ export async function insertMenuItemWithModifiers(
   return { menuItemId: itemData.id };
 }
 
+export async function updateMenuItem(
+  id: string,
+  fields: { name?: string; price?: number; category_id?: string | null; description?: string | null; is_available?: boolean }
+): Promise<void> {
+  const { error } = await supabase
+    .from("menu_items")
+    .update(fields)
+    .eq("id", id);
+
+  if (error) console.error("Error updating menu item:", error);
+}
+
 export async function updateMenuItemStatus(
   id: string,
   status: "Ready" | "Habis"

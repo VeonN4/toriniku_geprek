@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 export function usePagination<T>(items: T[], itemsPerPage: number) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -8,11 +8,11 @@ export function usePagination<T>(items: T[], itemsPerPage: number) {
     [items.length, itemsPerPage]
   );
 
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [totalPages, currentPage]);
+  // During render: clamp currentPage if it exceeds totalPages.
+  // React 18+ batches this without an extra render.
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
 
   const paginatedItems = useMemo(
     () =>
