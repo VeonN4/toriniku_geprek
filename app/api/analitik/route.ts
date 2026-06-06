@@ -67,7 +67,8 @@ export async function GET(request: NextRequest) {
   const statsMap: Record<string, number> = {};
   if (itemsData) {
     itemsData.forEach((row) => {
-      const name = row.menu_items?.[0]?.name || "Produk";
+      const menuItem = row.menu_items as unknown as { name: string } | null;
+      const name = menuItem?.name || "Produk";
       statsMap[name] = (statsMap[name] || 0) + Number(row.quantity);
     });
   }

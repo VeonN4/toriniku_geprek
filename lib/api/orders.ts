@@ -39,12 +39,11 @@ export async function fetchOrders(): Promise<Order[]> {
   return data.map((row: { id: string; created_at: string; order_type: string; status: string; total: number; subtotal: number; discount_amount: number; tax: number; payment_method: string; amount_paid: number; change_given: number; paid_at: string | null; order_items: { quantity: number; unit_price: number; notes: string | null; menu_items: { name: string }[] }[] }) => {
     const timeObj = new Date(row.created_at);
     const timeStr = `${String(timeObj.getHours()).padStart(2, "0")}:${String(timeObj.getMinutes()).padStart(2, "0")}`;
-    const orderItems: { name: string; quantity: number; unitPrice: number; notes?: string }[] = (row.order_items || []).map((it: { quantity: number; unit_price: number; notes: string | null; menu_items: { name: string }[] }) => ({
-      name: it.menu_items?.[0]?.name || "Produk",
-      quantity: it.quantity,
-      unitPrice: Number(it.unit_price) || 0,
-      notes: it.notes || undefined,
-    }));
+    const orderItems: { name: string; quantity: number; unitPrice: number; notes?: string }[] = (row.order_items || []).map((it) => {
+      const menuItem = it.menu_items as unknown as { name: string } | null;
+      const name = menuItem?.name || "Produk";
+      return { name, quantity: it.quantity, unitPrice: Number(it.unit_price) || 0, notes: it.notes || undefined };
+    });
     const itemsSummary = orderItems
       .map((it: { name: string; quantity: number }) => `${it.quantity}x ${it.name}`)
       .join(", ");
