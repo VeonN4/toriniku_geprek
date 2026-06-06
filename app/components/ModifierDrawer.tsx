@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useReducer } from "react";
+import { useEffect, useRef, useReducer, useState } from "react";
 import { usePOS, Modifier, MenuItem, Category } from "../context/POSContext";
 import {
   formatRupiahDelta,
@@ -110,7 +110,7 @@ function EditRow({
           placeholder="Nama modifier"
           className="flex-1 px-3 py-2 border border-outline-variant rounded-lg text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
         />
-        <div className="relative w-28 flex-shrink-0">
+        <div className="relative w-28 shrink-0">
           <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-secondary font-semibold">
             Rp
           </span>
@@ -197,7 +197,7 @@ function AddRow({
           placeholder="Nama modifier (mis: Extra Keju)"
           className="flex-1 px-3 py-2.5 border border-outline-variant rounded-lg text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
         />
-        <div className="relative w-28 flex-shrink-0">
+        <div className="relative w-28 shrink-0">
           <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-secondary font-semibold">
             Rp
           </span>
@@ -278,7 +278,10 @@ function ItemDetailForm({
         Detail Menu
       </p>
       <div>
-        <label htmlFor="edit-item-name" className="text-xs font-semibold text-secondary block mb-1">
+        <label
+          htmlFor="edit-item-name"
+          className="text-xs font-semibold text-secondary block mb-1"
+        >
           Nama Menu
         </label>
         <input
@@ -286,12 +289,17 @@ function ItemDetailForm({
           type="text"
           aria-label="Nama Menu"
           value={editState.name}
-          onChange={(e) => dispatch({ type: "SET_NAME", payload: e.target.value })}
+          onChange={(e) =>
+            dispatch({ type: "SET_NAME", payload: e.target.value })
+          }
           className="w-full px-3 py-2.5 border border-outline-variant rounded-lg text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
         />
       </div>
       <div>
-        <label htmlFor="edit-item-price" className="text-xs font-semibold text-secondary block mb-1">
+        <label
+          htmlFor="edit-item-price"
+          className="text-xs font-semibold text-secondary block mb-1"
+        >
           Harga (Rp)
         </label>
         <input
@@ -300,18 +308,28 @@ function ItemDetailForm({
           inputMode="numeric"
           aria-label="Harga (Rp)"
           value={editState.price}
-          onChange={(e) => dispatch({ type: "SET_PRICE", payload: formatPriceInput(e.target.value) })}
+          onChange={(e) =>
+            dispatch({
+              type: "SET_PRICE",
+              payload: formatPriceInput(e.target.value),
+            })
+          }
           className="w-full px-3 py-2.5 border border-outline-variant rounded-lg text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all"
         />
       </div>
       <div>
-        <label htmlFor="edit-item-category" className="text-xs font-semibold text-secondary block mb-1">
+        <label
+          htmlFor="edit-item-category"
+          className="text-xs font-semibold text-secondary block mb-1"
+        >
           Kategori
         </label>
         <select
           id="edit-item-category"
           value={editState.category}
-          onChange={(e) => dispatch({ type: "SET_CATEGORY", payload: e.target.value })}
+          onChange={(e) =>
+            dispatch({ type: "SET_CATEGORY", payload: e.target.value })
+          }
           aria-label="Kategori"
           className="w-full px-3 py-2.5 border border-outline-variant rounded-lg text-sm text-on-surface bg-surface-container-lowest focus:outline-none focus:border-primary transition-all"
         >
@@ -324,13 +342,18 @@ function ItemDetailForm({
         </select>
       </div>
       <div>
-        <label htmlFor="edit-item-note" className="text-xs font-semibold text-secondary block mb-1">
+        <label
+          htmlFor="edit-item-note"
+          className="text-xs font-semibold text-secondary block mb-1"
+        >
           Deskripsi / Catatan
         </label>
         <textarea
           id="edit-item-note"
           value={editState.note}
-          onChange={(e) => dispatch({ type: "SET_NOTE", payload: e.target.value })}
+          onChange={(e) =>
+            dispatch({ type: "SET_NOTE", payload: e.target.value })
+          }
           rows={2}
           aria-label="Deskripsi / Catatan"
           className="w-full px-3 py-2.5 border border-outline-variant rounded-lg text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary bg-surface-container-lowest transition-all resize-none"
@@ -344,8 +367,18 @@ function ItemDetailForm({
       >
         {editState.saved ? (
           <>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             Tersimpan
           </>
@@ -377,7 +410,7 @@ export default function ModifierDrawer({ item, onClose }: Props) {
   // Item editing state
   const [editState, dispatch] = useReducer(itemEditReducer, INITIAL_ITEM_EDIT);
 
-  const backdropRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLButtonElement>(null);
 
   const itemModifiers = item
     ? modifiers.filter((m) => m.menuItemId === item.id)
@@ -436,7 +469,7 @@ export default function ModifierDrawer({ item, onClose }: Props) {
 
   return (
     <div
-      className={`fixed inset-0 z-[60] overflow-hidden flex items-end md:items-center justify-center md:p-4 transition-all duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+      className={`fixed inset-0 z-60 overflow-hidden flex items-end md:items-center justify-center md:p-4 transition-all duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
     >
       {/* Backdrop */}
       <button
@@ -464,21 +497,22 @@ export default function ModifierDrawer({ item, onClose }: Props) {
         }}
       >
         {/* Drag handle — visible on mobile only */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0 md:hidden">
+        <div className="flex justify-center pt-3 pb-1 shrink-0 md:hidden">
           <div className="w-12 h-1 bg-surface-container-highest rounded-full" />
         </div>
 
         {/* Header */}
-        <div className="px-5 pb-4 pt-4 md:pt-5 border-b border-surface-container-high flex items-start justify-between flex-shrink-0">
+        <div className="px-5 pb-4 pt-4 md:pt-5 border-b border-surface-container-high flex items-start justify-between shrink-0">
           <div>
             <h2 className="text-base font-bold text-on-surface uppercase tracking-wide">
               Edit Menu
             </h2>
-            <p className="text-xs text-primary font-bold mt-0.5 truncate max-w-[15rem] md:max-w-xs">
+            <p className="text-xs text-primary font-bold mt-0.5 truncate max-w-60 md:max-w-xs">
               {item.name}
             </p>
           </div>
-          <button type="button"
+          <button
+            type="button"
             id="btn-close-modifier-drawer"
             onClick={handleClose}
             aria-label="Tutup"
@@ -565,7 +599,7 @@ export default function ModifierDrawer({ item, onClose }: Props) {
                         {formatRupiahDelta(mod.priceDelta)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                    <div className="flex items-center gap-1 shrink-0 ml-2">
                       {/* Edit */}
                       <button
                         id={`btn-edit-mod-${mod.id}`}

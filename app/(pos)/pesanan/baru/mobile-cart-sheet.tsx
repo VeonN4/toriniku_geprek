@@ -21,7 +21,6 @@ interface MobileCartSheetProps {
   isSubmitting: boolean;
   success: boolean;
   isForLater: boolean;
-  totalItems: number;
   onUpdateQuantity: (cartId: string, delta: number) => void;
   onRemoveItem: (cartId: string) => void;
   onSetOrderType: (type: "dine_in" | "takeaway") => void;
@@ -51,7 +50,6 @@ export function MobileCartSheet({
   isSubmitting,
   success,
   isForLater,
-  totalItems,
   onUpdateQuantity,
   onRemoveItem,
   onSetOrderType,

@@ -34,7 +34,8 @@ function Header({ onNewOrder }: { onNewOrder: () => void }) {
             Pantau semua orderan masuk di sini
           </p>
         </div>
-        <button type="button"
+        <button
+          type="button"
           id="btn-new-order-header"
           onClick={onNewOrder}
           className="hidden md:flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold text-sm px-4 py-2.5 rounded-xl backdrop-blur-sm active:scale-95 transition-all cursor-pointer shadow-ambient"
@@ -55,13 +56,14 @@ function FilterTabs({
   onChange: (v: "semua" | OrderStatus) => void;
 }) {
   return (
-    <div className="bg-surface-container-lowest px-4 md:px-8 py-2.5 flex gap-2 overflow-x-auto border-b border-outline-variant flex-shrink-0">
+    <div className="bg-surface-container-lowest px-4 md:px-8 py-2.5 flex gap-2 overflow-x-auto border-b border-outline-variant shrink-0">
       {FILTERS.map((f) => (
-        <button type="button"
+        <button
+          type="button"
           key={f.id}
           id={`filter-${f.id}`}
           onClick={() => onChange(f.id)}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap flex-shrink-0 cursor-pointer transition-all ${
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer transition-all ${
             active === f.id
               ? "bg-primary text-on-primary shadow-active"
               : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
@@ -82,7 +84,7 @@ function GroupSelector({
   onChange: (g: GroupBy) => void;
 }) {
   return (
-    <div className="bg-surface-container-lowest px-4 md:px-8 py-2 flex items-center gap-3 border-b border-outline-variant flex-wrap flex-shrink-0 transition-all">
+    <div className="bg-surface-container-lowest px-4 md:px-8 py-2 flex items-center gap-3 border-b border-outline-variant flex-wrap shrink-0 transition-all">
       <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
         Kelompokkan:
       </span>
@@ -206,7 +208,8 @@ function FlatOrderGrid({
 
 function FabButton({ onClick }: { onClick: () => void }) {
   return (
-    <button type="button"
+    <button
+      type="button"
       id="fab-new-order"
       onClick={onClick}
       className="md:hidden fixed bottom-20 right-5 z-40 w-14 h-14 bg-primary text-on-primary rounded-full shadow-active flex items-center justify-center hover:bg-primary-dark active:scale-95 transition-all cursor-pointer"

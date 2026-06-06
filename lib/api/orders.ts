@@ -36,23 +36,23 @@ export async function fetchOrders(): Promise<Order[]> {
     return [];
   }
 
-  return data.map((row: any) => {
+  return data.map((row: { id: string; created_at: string; order_type: string; status: string; total: number; subtotal: number; discount_amount: number; tax: number; payment_method: string; amount_paid: number; change_given: number; paid_at: string | null; order_items: { quantity: number; unit_price: number; notes: string | null; menu_items: { name: string }[] }[] }) => {
     const timeObj = new Date(row.created_at);
     const timeStr = `${String(timeObj.getHours()).padStart(2, "0")}:${String(timeObj.getMinutes()).padStart(2, "0")}`;
-    const orderItems: { name: string; quantity: number; unitPrice: number; notes?: string }[] = (row.order_items || []).map((it: any) => ({
-      name: it.menu_items?.name || "Produk",
+    const orderItems: { name: string; quantity: number; unitPrice: number; notes?: string }[] = (row.order_items || []).map((it: { quantity: number; unit_price: number; notes: string | null; menu_items: { name: string }[] }) => ({
+      name: it.menu_items?.[0]?.name || "Produk",
       quantity: it.quantity,
       unitPrice: Number(it.unit_price) || 0,
       notes: it.notes || undefined,
     }));
     const itemsSummary = orderItems
-      .map((it: any) => `${it.quantity}x ${it.name}`)
+      .map((it: { name: string; quantity: number }) => `${it.quantity}x ${it.name}`)
       .join(", ");
 
     return {
       id: row.id,
       orderNumber: `TN-${row.id.slice(0, 4).toUpperCase()}`,
-      orderType: row.order_type,
+      orderType: row.order_type as "dine_in" | "takeaway",
       customerName: row.order_type === "dine_in" ? "Dine In" : "Takeaway",
       items: itemsSummary || "Tanpa Item",
       itemList: orderItems,

@@ -297,13 +297,6 @@ export function POSProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SET_DISCOUNTS_LOADING", loading: false });
   }, []);
 
-  const fetchCategories = useCallback(async () => {
-    dispatch({ type: "SET_CATEGORIES_LOADING", loading: true });
-    const data = await categoriesApi.fetchCategories();
-    dispatch({ type: "SET_CATEGORIES", categories: data });
-    dispatch({ type: "SET_CATEGORIES_LOADING", loading: false });
-  }, []);
-
   const fetchModifiers = useCallback(async () => {
     dispatch({ type: "SET_MODIFIERS_LOADING", loading: true });
     const data = await modifiersApi.fetchModifiers();

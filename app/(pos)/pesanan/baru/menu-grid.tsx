@@ -1,19 +1,17 @@
 "use client";
 
 import { formatRupiah } from "../../../../lib/utils/format";
-import type { MenuItem, Modifier } from "../../../context/POSContext";
+import type { MenuItem } from "../../../context/POSContext";
 
 interface MenuGridProps {
   menuLoading: boolean;
   filteredMenuItems: MenuItem[];
-  modifiers: Modifier[];
   handleItemClick: (item: MenuItem) => void;
 }
 
 export function MenuGrid({
   menuLoading,
   filteredMenuItems,
-  modifiers,
   handleItemClick,
 }: MenuGridProps) {
   if (menuLoading) {

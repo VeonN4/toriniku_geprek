@@ -44,7 +44,8 @@ function LineChart({ data }: { data: DailyRevenue[] }) {
 
   const toX = (i: number) => PAD.left + i * xStep;
   const toY = (v: number) =>
-    PAD.top + ((H - PAD.top - PAD.bottom) * (1 - (v - minVal) / (maxVal - minVal)));
+    PAD.top +
+    (H - PAD.top - PAD.bottom) * (1 - (v - minVal) / (maxVal - minVal));
 
   const points = data.map((d, i) => ({ x: toX(i), y: toY(d.total), ...d }));
 
@@ -65,8 +66,11 @@ function LineChart({ data }: { data: DailyRevenue[] }) {
     y: toY(maxVal * t),
   }));
 
-  const step = data.length <= 7 ? 1 : data.length <= 14 ? 2 : data.length <= 30 ? 5 : 10;
-  const xLabels = points.filter((_, i) => i % step === 0 || i === points.length - 1);
+  const step =
+    data.length <= 7 ? 1 : data.length <= 14 ? 2 : data.length <= 30 ? 5 : 10;
+  const xLabels = points.filter(
+    (_, i) => i % step === 0 || i === points.length - 1,
+  );
 
   const [hovered, setHovered] = useState<number | null>(null);
 
@@ -78,8 +82,16 @@ function LineChart({ data }: { data: DailyRevenue[] }) {
     >
       <defs>
         <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0.01" />
+          <stop
+            offset="0%"
+            stopColor="var(--color-primary)"
+            stopOpacity="0.25"
+          />
+          <stop
+            offset="100%"
+            stopColor="var(--color-primary)"
+            stopOpacity="0.01"
+          />
         </linearGradient>
       </defs>
 
@@ -292,7 +304,9 @@ function SummaryCards({
           {loading ? (
             <div className="h-6 w-16 bg-surface-container rounded-lg animate-pulse mt-2 mb-1" />
           ) : (
-            <p className={`text-base md:text-lg font-bold mt-1 ${c.color} leading-tight`}>
+            <p
+              className={`text-base md:text-lg font-bold mt-1 ${c.color} leading-tight`}
+            >
               {c.value}
             </p>
           )}
@@ -309,7 +323,11 @@ const PERIODS: { key: Period; label: string }[] = [
   { key: "90d", label: "90 Hari" },
 ];
 
-export default function AnalitikClient({ initialData }: { initialData: AnalyticsData }) {
+export default function AnalitikClient({
+  initialData,
+}: {
+  initialData: AnalyticsData;
+}) {
   const [period, setPeriod] = useState<Period>("30d");
   const [topN, setTopN] = useState(10);
   const [loading, setLoading] = useState(false);
@@ -332,7 +350,7 @@ export default function AnalitikClient({ initialData }: { initialData: Analytics
   const { dailyRevenue, menuStats, summary } = analytics;
   const topMenus = menuStats.slice(0, topN);
   const totalOrdered = menuStats.reduce((s, m) => s + m.quantity, 0);
-  const { totalRevenue, avgDaily, peakDay } = summary;
+  const { totalRevenue, avgDaily } = summary;
 
   return (
     <div className="flex flex-col min-h-full bg-background">
@@ -348,7 +366,8 @@ export default function AnalitikClient({ initialData }: { initialData: Analytics
 
         <div className="relative z-10 mt-4 flex gap-2">
           {PERIODS.map((p) => (
-            <button type="button"
+            <button
+              type="button"
               key={p.key}
               onClick={() => handlePeriodChange(p.key)}
               className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
@@ -398,7 +417,11 @@ export default function AnalitikClient({ initialData }: { initialData: Analytics
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d={summary.revenueChange >= 0 ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"}
+                        d={
+                          summary.revenueChange >= 0
+                            ? "M18 15l-6-6-6 6"
+                            : "M6 9l6 6 6-6"
+                        }
                       />
                     </svg>
                     {Math.abs(summary.revenueChange).toFixed(0)}%
@@ -451,12 +474,15 @@ export default function AnalitikClient({ initialData }: { initialData: Analytics
                 Menu Terlaris
               </h2>
               <p className="text-xxs text-on-surface-variant mt-0.5">
-                {loading ? "—" : `${totalOrdered} item terjual dalam periode ini`}
+                {loading
+                  ? "—"
+                  : `${totalOrdered} item terjual dalam periode ini`}
               </p>
             </div>
             <div className="flex gap-1.5">
               {[5, 10, 15].map((n) => (
-                <button type="button"
+                <button
+                  type="button"
                   key={n}
                   onClick={() => setTopN(n)}
                   className={`px-2.5 py-1 rounded-lg text-xxs font-bold transition-all cursor-pointer ${
@@ -501,38 +527,52 @@ export default function AnalitikClient({ initialData }: { initialData: Analytics
                 <div className="flex-1 space-y-2.5">
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="font-semibold text-on-surface">Dine In</span>
-                      <span className="font-bold text-primary">{summary.dineInCount}</span>
+                      <span className="font-semibold text-on-surface">
+                        Dine In
+                      </span>
+                      <span className="font-bold text-primary">
+                        {summary.dineInCount}
+                      </span>
                     </div>
                     <div className="h-2 bg-surface-container rounded-full overflow-hidden">
                       <div
                         className="h-full bg-primary rounded-full transition-all"
-                        style={{ width: `${(summary.dineInCount / summary.orderCount) * 100}%` }}
+                        style={{
+                          width: `${(summary.dineInCount / summary.orderCount) * 100}%`,
+                        }}
                       />
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="font-semibold text-on-surface">Bungkus</span>
-                      <span className="font-bold text-amber-500">{summary.takeawayCount}</span>
+                      <span className="font-semibold text-on-surface">
+                        Bungkus
+                      </span>
+                      <span className="font-bold text-amber-500">
+                        {summary.takeawayCount}
+                      </span>
                     </div>
                     <div className="h-2 bg-surface-container rounded-full overflow-hidden">
                       <div
                         className="h-full bg-amber-400 rounded-full transition-all"
-                        style={{ width: `${(summary.takeawayCount / summary.orderCount) * 100}%` }}
+                        style={{
+                          width: `${(summary.takeawayCount / summary.orderCount) * 100}%`,
+                        }}
                       />
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-col items-center justify-center w-20 h-20 rounded-full bg-surface-container">
-                  <span className="text-lg font-bold text-on-surface">{summary.orderCount}</span>
+                  <span className="text-lg font-bold text-on-surface">
+                    {summary.orderCount}
+                  </span>
                   <span className="text-xxs text-outline">total</span>
                 </div>
               </div>
             </div>
 
             <div className="bg-surface-container-lowest rounded-2xl p-4 md:p-5 shadow-ambient border border-surface-container-high flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center shrink-0">
                 <svg
                   className="w-6 h-6 text-amber-500"
                   fill="none"
@@ -540,7 +580,11 @@ export default function AnalitikClient({ initialData }: { initialData: Analytics
                   strokeWidth={2}
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
               <div>
@@ -552,7 +596,11 @@ export default function AnalitikClient({ initialData }: { initialData: Analytics
                 </p>
                 <p className="text-xxs text-outline mt-0.5">
                   {summary.peakDay?.date !== "-"
-                    ? summary.peakDay.date.split("-").reverse().slice(0, 2).join("/")
+                    ? summary.peakDay.date
+                        .split("-")
+                        .reverse()
+                        .slice(0, 2)
+                        .join("/")
                     : "—"}
                 </p>
               </div>

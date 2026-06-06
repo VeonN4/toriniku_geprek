@@ -77,7 +77,7 @@ export default function LoginPage() {
         router.push("/beranda");
         router.refresh();
       }
-    } catch (err: unknown) {
+    } catch {
       dispatch({
         type: "SET_ERROR",
         value: "Terjadi kesalahan sistem. Silakan coba lagi.",

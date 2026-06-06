@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
     revenueMap[key] = 0;
   }
   if (ordersData) {
-    ordersData.forEach((row: any) => {
-      const key = (row.created_at as string).slice(0, 10);
+    ordersData.forEach((row: { created_at: string; total: number }) => {
+      const key = row.created_at.slice(0, 10);
       if (key in revenueMap) revenueMap[key] = (revenueMap[key] || 0) + Number(row.total);
     });
   }
@@ -66,8 +66,8 @@ export async function GET(request: NextRequest) {
 
   const statsMap: Record<string, number> = {};
   if (itemsData) {
-    itemsData.forEach((row: any) => {
-      const name: string = row.menu_items?.name || "Produk";
+    itemsData.forEach((row) => {
+      const name = row.menu_items?.[0]?.name || "Produk";
       statsMap[name] = (statsMap[name] || 0) + Number(row.quantity);
     });
   }
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
   const orderCount = ordersData?.length ?? 0;
   const avgOrderValue = orderCount > 0 ? totalRevenue / orderCount : 0;
 
-  const dineInCount = ordersData?.filter((r: any) => r.order_type === "dine_in").length ?? 0;
+  const dineInCount = ordersData?.filter((r: { order_type: string }) => r.order_type === "dine_in").length ?? 0;
   const takeawayCount = orderCount - dineInCount;
 
   // ── 4. Previous period comparison ────────────────────────────────────────────
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
     .gte("created_at", prevSinceISO)
     .lt("created_at", sinceISO);
 
-  const prevRevenue = prevData?.reduce((s: number, r: any) => s + Number(r.total), 0) ?? 0;
+  const prevRevenue = prevData?.reduce((s: number, r: { total: number }) => s + Number(r.total), 0) ?? 0;
   const revenueChange = prevRevenue > 0
     ? ((totalRevenue - prevRevenue) / prevRevenue) * 100
     : totalRevenue > 0 ? 100 : 0;

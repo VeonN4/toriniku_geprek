@@ -121,7 +121,6 @@ export default function CartArea({
         isSubmitting={isSubmitting}
         success={success}
         isForLater={isForLater}
-        totalItems={totalItems}
         onUpdateQuantity={onUpdateQuantity}
         onRemoveItem={onRemoveItem}
         onSetOrderType={onSetOrderType}

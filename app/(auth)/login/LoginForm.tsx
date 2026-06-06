@@ -192,7 +192,7 @@ export default function LoginForm({
           {error && (
             <div className="flex items-center gap-2 bg-red-50 border border-red-100 text-red-600 text-xs font-medium px-3 py-2.5 rounded-xl mb-5">
               <svg
-                className="w-4 h-4 flex-shrink-0"
+                className="w-4 h-4 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={2}
@@ -200,7 +200,13 @@ export default function LoginForm({
               >
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" strokeLinecap="round" />
-                <line x1="12" y1="16" x2="12.01" y2="16" strokeLinecap="round" />
+                <line
+                  x1="12"
+                  y1="16"
+                  x2="12.01"
+                  y2="16"
+                  strokeLinecap="round"
+                />
               </svg>
               {error}
             </div>

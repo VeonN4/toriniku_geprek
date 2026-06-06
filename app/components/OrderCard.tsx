@@ -12,13 +12,6 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
   Dibatalkan: "bg-error-container text-on-error-container font-semibold",
 };
 
-const STATUS_OPTIONS: OrderStatus[] = [
-  "Baru",
-  "Diproses",
-  "Selesai",
-  "Dibatalkan",
-];
-
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
@@ -44,7 +37,7 @@ export default function OrderCard({
   order: Order;
   onCardClick?: (order: Order) => void;
 }) {
-  const { updateOrderStatus, deleteOrder } = usePOS();
+  const { deleteOrder } = usePOS();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const qty = totalQuantity(order);
   const isUnpaid = order.status === "Baru" || order.status === "Diproses";
@@ -54,14 +47,16 @@ export default function OrderCard({
     setConfirmDelete(false);
   };
 
-  const payButton = isUnpaid && onCardClick ? (
-    <button type="button"
-      onClick={() => onCardClick(order)}
-      className="mt-3 w-full py-2 bg-primary text-on-primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.98] cursor-pointer transition-all"
-    >
-      Lanjutkan Pembayaran
-    </button>
-  ) : null;
+  const payButton =
+    isUnpaid && onCardClick ? (
+      <button
+        type="button"
+        onClick={() => onCardClick(order)}
+        className="mt-3 w-full py-2 bg-primary text-on-primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.98] cursor-pointer transition-all"
+      >
+        Lanjutkan Pembayaran
+      </button>
+    ) : null;
 
   return (
     <div
@@ -75,17 +70,21 @@ export default function OrderCard({
             #{order.orderNumber}
           </span>
         </div>
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex items-center gap-1 shrink-0">
           {confirmDelete ? (
             <div className="flex items-center gap-1 bg-error-container rounded-full px-2 py-1 animate-scale-up">
-              <span className="text-xs font-semibold text-on-error-container">Hapus?</span>
-              <button type="button"
+              <span className="text-xs font-semibold text-on-error-container">
+                Hapus?
+              </span>
+              <button
+                type="button"
                 onClick={handleDelete}
                 className="text-xs font-bold text-on-error-container hover:text-error px-1.5 py-0.5 rounded-md hover:bg-error/20 transition-colors cursor-pointer"
               >
                 Ya
               </button>
-              <button type="button"
+              <button
+                type="button"
                 onClick={() => setConfirmDelete(false)}
                 className="text-xs font-bold text-on-error-container hover:text-error px-1.5 py-0.5 rounded-md hover:bg-error/20 transition-colors cursor-pointer"
               >
@@ -96,18 +95,29 @@ export default function OrderCard({
             <>
               <span
                 id={`btn-status-${order.id}`}
-                className={`text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0 ${STATUS_COLORS[order.status]}`}
+                className={`text-xs font-semibold px-3 py-1 rounded-full shrink-0 ${STATUS_COLORS[order.status]}`}
               >
                 {order.status}
               </span>
-              <button type="button"
+              <button
+                type="button"
                 id={`btn-delete-order-${order.id}`}
                 aria-label="Hapus pesanan"
                 onClick={() => setConfirmDelete(true)}
                 className="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-error hover:bg-error/10 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
+                  />
                 </svg>
               </button>
             </>

@@ -2,11 +2,7 @@
 
 import { useMemo, useReducer } from "react";
 import { useRouter } from "next/navigation";
-import {
-  usePOS,
-  MenuItem,
-  Modifier,
-} from "../../../context/POSContext";
+import { usePOS, MenuItem, Modifier } from "../../../context/POSContext";
 import { CartItem } from "./cart-item-card";
 import { MenuHeader } from "./menu-header";
 import { MenuGrid } from "./menu-grid";
@@ -21,7 +17,12 @@ interface CartState {
 }
 
 type CartAction =
-  | { type: "ADD_TO_CART"; item: MenuItem; selectedModifiers: Modifier[]; notes: string }
+  | {
+      type: "ADD_TO_CART";
+      item: MenuItem;
+      selectedModifiers: Modifier[];
+      notes: string;
+    }
   | { type: "UPDATE_QUANTITY"; cartId: string; delta: number }
   | { type: "REMOVE_ITEM"; cartId: string }
   | { type: "SET_ORDER_TYPE"; payload: "dine_in" | "takeaway" }
@@ -33,21 +34,33 @@ type CartAction =
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case "ADD_TO_CART": {
-      const modString = action.selectedModifiers.map((m) => m.id).sort().join("-");
+      const modString = action.selectedModifiers
+        .map((m) => m.id)
+        .sort()
+        .join("-");
       const cartId = `${action.item.id}-${modString}-${action.notes}`;
       const existing = state.cart.find((i) => i.cartId === cartId);
       if (existing) {
-        return { ...state, cart: state.cart.map((i) =>
-          i.cartId === cartId ? { ...i, quantity: i.quantity + 1 } : i
-        ) };
+        return {
+          ...state,
+          cart: state.cart.map((i) =>
+            i.cartId === cartId ? { ...i, quantity: i.quantity + 1 } : i,
+          ),
+        };
       }
       return {
         ...state,
-        cart: [...state.cart, {
-          cartId, item: action.item as CartItem["item"], quantity: 1,
-          selectedModifiers: action.selectedModifiers as CartItem["selectedModifiers"],
-          customNotes: action.notes,
-        }],
+        cart: [
+          ...state.cart,
+          {
+            cartId,
+            item: action.item as CartItem["item"],
+            quantity: 1,
+            selectedModifiers:
+              action.selectedModifiers as CartItem["selectedModifiers"],
+            customNotes: action.notes,
+          },
+        ],
       };
     }
     case "UPDATE_QUANTITY":
@@ -64,7 +77,10 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         }, [] as CartItem[]),
       };
     case "REMOVE_ITEM":
-      return { ...state, cart: state.cart.filter((i) => i.cartId !== action.cartId) };
+      return {
+        ...state,
+        cart: state.cart.filter((i) => i.cartId !== action.cartId),
+      };
     case "SET_ORDER_TYPE":
       return { ...state, orderType: action.payload };
     case "SET_DISCOUNT_ID":
@@ -131,7 +147,12 @@ function uiReducer(state: UIState, action: UIAction): UIState {
     case "SET_FOR_LATER":
       return { ...state, isForLater: action.payload };
     case "OPEN_MODIFIERS":
-      return { ...state, activeItemForModifiers: action.item, tempSelectedModifiers: [], tempNotes: "" };
+      return {
+        ...state,
+        activeItemForModifiers: action.item,
+        tempSelectedModifiers: [],
+        tempNotes: "",
+      };
     case "SET_TEMP_MODIFIERS":
       return { ...state, tempSelectedModifiers: action.payload };
     case "SET_TEMP_NOTES":
@@ -173,16 +194,16 @@ export default function PesananBaruClient() {
   const [ui, dispatchUI] = useReducer(uiReducer, initialUIState);
 
   const currentItemModifiers = useMemo(() => {
-    if (!ui.activeItemForModifiers) return [];
-    return modifiers.filter(
-      (mod) => mod.menuItemId === ui.activeItemForModifiers.id,
-    );
+    const activeItem = ui.activeItemForModifiers;
+    if (!activeItem) return [];
+    return modifiers.filter((mod) => mod.menuItemId === activeItem.id);
   }, [ui.activeItemForModifiers, modifiers]);
 
   const filteredMenuItems = useMemo(() => {
     return menuItems.filter((item) => {
       const matchCategory =
-        ui.selectedCategoryId === "all" || item.category === ui.selectedCategoryId;
+        ui.selectedCategoryId === "all" ||
+        item.category === ui.selectedCategoryId;
       const matchSearch = item.name
         .toLowerCase()
         .includes(ui.searchQuery.toLowerCase());
@@ -204,7 +225,12 @@ export default function PesananBaruClient() {
     if (itemMods.length > 0) {
       dispatchUI({ type: "OPEN_MODIFIERS", item });
     } else {
-      dispatchCart({ type: "ADD_TO_CART", item, selectedModifiers: [], notes: "" });
+      dispatchCart({
+        type: "ADD_TO_CART",
+        item,
+        selectedModifiers: [],
+        notes: "",
+      });
     }
   };
 
@@ -280,7 +306,10 @@ export default function PesananBaruClient() {
     if (!ui.isForLater) {
       paidVal = parseFloat(cartState.amountPaid.replace(/\D/g, ""));
       if (isNaN(paidVal) || paidVal < total) {
-        dispatchUI({ type: "SET_ERROR", payload: "Uang yang dibayarkan kurang" });
+        dispatchUI({
+          type: "SET_ERROR",
+          payload: "Uang yang dibayarkan kurang",
+        });
         return;
       }
     }
@@ -307,7 +336,10 @@ export default function PesananBaruClient() {
         quantity: entry.quantity,
         unitPrice: entry.item.price,
         notes: entry.customNotes,
-        selectedModifiers: entry.selectedModifiers,
+        selectedModifiers: entry.selectedModifiers.map((m) => ({
+          ...m,
+          menuItemId: entry.item.id,
+        })),
       }));
 
       await addCompleteOrder(orderPayload, itemsPayload);
@@ -318,15 +350,22 @@ export default function PesananBaruClient() {
         router.push("/pesanan");
         router.refresh();
       }, 1000);
-    } catch (err: any) {
-      dispatchUI({ type: "SET_ERROR", payload: err?.message || "Gagal memproses transaksi kasir" });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Gagal memproses transaksi kasir";
+      dispatchUI({
+        type: "SET_ERROR",
+        payload: message,
+      });
     } finally {
       dispatchUI({ type: "SET_SUBMITTING", payload: false });
     }
   };
 
   const handleQuickCash = (amt: number) => {
-    dispatchCart({ type: "SET_AMOUNT_PAID", payload: amt.toLocaleString("id-ID") });
+    dispatchCart({
+      type: "SET_AMOUNT_PAID",
+      payload: amt.toLocaleString("id-ID"),
+    });
     dispatchUI({ type: "SET_ERROR", payload: "" });
   };
 
@@ -334,12 +373,14 @@ export default function PesananBaruClient() {
 
   return (
     <div className="relative flex flex-col md:flex-row min-h-dvh md:h-screen md:overflow-hidden bg-surface-container-low font-sans">
-      <div className="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto pb-28 md:pb-6 md:pr-[27rem] transition-all">
+      <div className="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto pb-28 md:pb-6 md:pr-108 transition-all">
         <MenuHeader
           searchQuery={ui.searchQuery}
           onSearchChange={(v) => dispatchUI({ type: "SET_SEARCH", payload: v })}
           selectedCategoryId={ui.selectedCategoryId}
-          onCategoryChange={(v) => dispatchUI({ type: "SET_CATEGORY", payload: v })}
+          onCategoryChange={(v) =>
+            dispatchUI({ type: "SET_CATEGORY", payload: v })
+          }
           categories={categories}
           categoriesLoading={categoriesLoading}
           onBack={() => router.push("/pesanan")}
@@ -348,7 +389,6 @@ export default function PesananBaruClient() {
         <MenuGrid
           menuLoading={menuLoading}
           filteredMenuItems={filteredMenuItems}
-          modifiers={modifiers}
           handleItemClick={handleItemClick}
         />
       </div>
@@ -377,17 +417,31 @@ export default function PesananBaruClient() {
         tempNotes={ui.tempNotes}
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeCartItem}
-        onSetOrderType={(v) => dispatchCart({ type: "SET_ORDER_TYPE", payload: v })}
-        onSetDiscountId={(v) => dispatchCart({ type: "SET_DISCOUNT_ID", payload: v })}
-        onSetPaymentMethod={(v) => dispatchCart({ type: "SET_PAYMENT_METHOD", payload: v })}
-        onSetAmountPaid={(v) => dispatchCart({ type: "SET_AMOUNT_PAID", payload: v })}
+        onSetOrderType={(v) =>
+          dispatchCart({ type: "SET_ORDER_TYPE", payload: v })
+        }
+        onSetDiscountId={(v) =>
+          dispatchCart({ type: "SET_DISCOUNT_ID", payload: v })
+        }
+        onSetPaymentMethod={(v) =>
+          dispatchCart({ type: "SET_PAYMENT_METHOD", payload: v })
+        }
+        onSetAmountPaid={(v) =>
+          dispatchCart({ type: "SET_AMOUNT_PAID", payload: v })
+        }
         onQuickCash={handleQuickCash}
         onCheckout={handleCheckout}
-        onToggleCart={(v) => dispatchUI({ type: "TOGGLE_CART", payload: v ?? !ui.cartOpen })}
-        onSetIsForLater={(v) => dispatchUI({ type: "SET_FOR_LATER", payload: v })}
+        onToggleCart={(v) =>
+          dispatchUI({ type: "TOGGLE_CART", payload: v ?? !ui.cartOpen })
+        }
+        onSetIsForLater={(v) =>
+          dispatchUI({ type: "SET_FOR_LATER", payload: v })
+        }
         onSetError={(msg) => dispatchUI({ type: "SET_ERROR", payload: msg })}
         onToggleModifier={handleToggleModifier}
-        onNotesChange={(notes) => dispatchUI({ type: "SET_TEMP_NOTES", payload: notes })}
+        onNotesChange={(notes) =>
+          dispatchUI({ type: "SET_TEMP_NOTES", payload: notes })
+        }
         onConfirmModifiers={handleConfirmModifiers}
         onCloseModifiers={() => dispatchUI({ type: "CLOSE_MODIFIERS" })}
       />
